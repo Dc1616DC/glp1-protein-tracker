@@ -548,16 +548,16 @@ If you're experiencing several of these symptoms:
   ];
 
   return (
-    <div className="min-h-screen" style={{ backgroundColor: '#f9fbfd' }}>
+    <div className="min-h-screen bg-neutral-50">
       {/* Achievement Popup */}
       {showAchievement && (
-        <div className="fixed top-20 right-4 z-50 animate-bounce">
-          <div className="bg-white rounded-xl shadow-2xl p-6 border-2 border-amber-400 max-w-sm">
+        <div className="fixed top-20 right-4 z-50 animate-scale-in">
+          <div className="achievement-card max-w-sm">
             <div className="text-center">
-              <div className="text-6xl mb-2">{showAchievement.icon}</div>
-              <h3 className="text-xl font-bold mb-1" style={{ color: '#12263f' }}>Achievement Unlocked!</h3>
-              <p className="font-semibold" style={{ color: '#2c7be5' }}>{showAchievement.name}</p>
-              <p className="text-sm" style={{ color: '#6e84a3' }}>{showAchievement.description}</p>
+              <div className="text-6xl mb-3 animate-bounce">{showAchievement.icon}</div>
+              <h3 className="text-xl font-bold mb-2 text-neutral-900">Achievement Unlocked!</h3>
+              <p className="font-semibold text-primary-600 mb-1">{showAchievement.name}</p>
+              <p className="text-sm text-neutral-500">{showAchievement.description}</p>
             </div>
           </div>
         </div>
@@ -565,21 +565,20 @@ If you're experiencing several of these symptoms:
 
       {/* Medical Disclaimer Banner */}
       {!userProfile.disclaimerAccepted && (
-        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b-4 border-amber-400 shadow-lg">
-          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div className="bg-gradient-to-r from-warning-50 to-accent-coral/20 border-b-4 border-warning-400 shadow-medium animate-slide-down">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
             <div className="flex items-start gap-4">
-              <div className="text-5xl">⚠️</div>
+              <div className="text-6xl animate-pulse-slow">⚠️</div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2" style={{ color: '#12263f' }}>Important Medical Disclaimer</h3>
-                <p className="text-sm mb-4" style={{ color: '#3e4b5b' }}>
+                <h3 className="text-2xl font-bold mb-3 text-neutral-900">Important Medical Disclaimer</h3>
+                <p className="text-base mb-6 text-neutral-700 leading-relaxed">
                   This tool provides dietary guidance and is <strong>NOT medical advice</strong>.
                   This calculator is <strong>NOT safe for individuals with kidney disease</strong>.
                   Always consult your healthcare provider before making significant dietary changes.
                 </p>
                 <button
                   onClick={() => setUserProfile({...userProfile, disclaimerAccepted: true})}
-                  className="px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-200 hover:shadow-lg transform hover:scale-105"
-                  style={{ background: 'linear-gradient(135deg, #f6c343 0%, #f97316 100%)' }}
+                  className="btn bg-gradient-energy text-white shadow-soft hover:shadow-glow-warning"
                 >
                   I Understand & Accept
                 </button>
@@ -591,19 +590,19 @@ If you're experiencing several of these symptoms:
 
       {/* Kidney Disease Screening */}
       {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === null && (
-        <div className="min-h-screen flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full" style={{ borderTop: '4px solid #e63757' }}>
-            <div className="text-center mb-6">
-              <div className="text-7xl mb-4">🏥</div>
-              <h2 className="text-3xl font-bold mb-2" style={{ color: '#12263f' }}>Health Screening Required</h2>
-              <p style={{ color: '#6e84a3' }}>We need to ensure this tool is safe for you</p>
+        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-neutral-50 to-primary-50/30">
+          <div className="card shadow-hard p-10 max-w-lg w-full border-t-4 border-error-500 animate-scale-in">
+            <div className="text-center mb-8">
+              <div className="text-8xl mb-4 animate-pulse-slow">🏥</div>
+              <h2 className="text-4xl font-bold mb-3 text-neutral-900">Health Screening Required</h2>
+              <p className="text-lg text-neutral-500">We need to ensure this tool is safe for you</p>
             </div>
 
-            <div className="bg-red-50 rounded-lg p-6 mb-8" style={{ borderLeft: '4px solid #e63757' }}>
-              <p className="font-semibold mb-3" style={{ color: '#12263f', fontSize: '1.1rem' }}>
+            <div className="alert-error mb-8">
+              <p className="font-semibold mb-3 text-neutral-900 text-lg">
                 Do you have kidney disease or any condition affecting kidney function?
               </p>
-              <p className="text-sm" style={{ color: '#6e84a3' }}>
+              <p className="text-sm text-neutral-600">
                 High protein intake can be dangerous for individuals with kidney disease. This tool should not be used if you have any kidney-related conditions.
               </p>
             </div>
@@ -614,15 +613,13 @@ If you're experiencing several of these symptoms:
                   alert('This tool is not safe for use with kidney disease. Please consult your healthcare provider for personalized nutrition guidance.');
                   window.location.href = 'https://kidney.org';
                 }}
-                className="py-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-105"
-                style={{ backgroundColor: '#e63757' }}
+                className="btn py-5 bg-error-600 text-white shadow-soft hover:bg-error-700 hover:shadow-medium"
               >
                 Yes, I have kidney disease
               </button>
               <button
                 onClick={() => setUserProfile({...userProfile, hasKidneyDisease: false})}
-                className="py-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-105"
-                style={{ backgroundColor: '#059669' }}
+                className="btn py-5 bg-success-600 text-white shadow-soft hover:bg-success-700 hover:shadow-medium"
               >
                 No, Continue
               </button>
@@ -635,28 +632,32 @@ If you're experiencing several of these symptoms:
       {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === false && (
         <>
           {/* Header */}
-          <header className="shadow-lg" style={{ background: 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)' }}>
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                <div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 flex items-center gap-3">
-                    💪 GLP-1 Muscle Rescue
+          <header className="shadow-medium bg-gradient-primary relative overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/50 to-success-600/50 animate-gradient"></div>
+            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
+                <div className="animate-slide-up">
+                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-3 flex items-center gap-3 drop-shadow-lg">
+                    <span className="animate-float">💪</span>
+                    <span>GLP-1 Muscle Rescue</span>
                   </h1>
-                  <p className="text-blue-50 text-lg">
+                  <p className="text-white/90 text-xl font-medium">
                     Science-based protein tracking to preserve muscle during weight loss
                   </p>
                 </div>
-                <div className="flex items-center gap-4">
+                <div className="flex items-center gap-4 animate-slide-down">
                   {currentStreak > 0 && userProfile.profileComplete && (
-                    <div className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl border-2 border-white/30">
-                      <div className="text-xs font-bold uppercase">Streak</div>
-                      <div className="text-xl font-bold">🔥 {currentStreak} days</div>
+                    <div className="glass px-5 py-3 rounded-2xl border-2 border-white/40 shadow-soft">
+                      <div className="text-xs font-bold uppercase text-white/80 tracking-wider">Streak</div>
+                      <div className="text-2xl font-bold text-white flex items-center gap-2">
+                        <span className="animate-pulse">🔥</span> {currentStreak} days
+                      </div>
                     </div>
                   )}
                   {trialDaysRemaining > 0 && (
-                    <div className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl border-2 border-white/30 shadow-lg">
-                      <div className="text-xs font-bold uppercase tracking-wider mb-1">Free Trial</div>
-                      <div className="text-2xl font-bold">{trialDaysRemaining} days left</div>
+                    <div className="glass px-6 py-4 rounded-2xl border-2 border-white/40 shadow-soft">
+                      <div className="text-xs font-bold uppercase text-white/80 tracking-wider mb-1">Free Trial</div>
+                      <div className="text-2xl font-bold text-white">{trialDaysRemaining} days left</div>
                     </div>
                   )}
                 </div>
@@ -666,33 +667,24 @@ If you're experiencing several of these symptoms:
 
           {/* Navigation Tabs */}
           {userProfile.profileComplete && (
-            <div className="bg-white border-b-2" style={{ borderColor: '#edf2f9' }}>
+            <div className="bg-white border-b-2 border-neutral-100 shadow-soft sticky top-0 z-40">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex gap-1">
+                <div className="flex gap-2">
                   <button
                     onClick={() => setCurrentView('track')}
-                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
-                      currentView === 'track' ? 'border-current' : 'border-transparent'
-                    }`}
-                    style={{ color: currentView === 'track' ? '#2c7be5' : '#6e84a3' }}
+                    className={`nav-tab text-lg ${currentView === 'track' ? 'nav-tab-active' : 'text-neutral-500'}`}
                   >
                     📊 Track
                   </button>
                   <button
                     onClick={() => setCurrentView('history')}
-                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
-                      currentView === 'history' ? 'border-current' : 'border-transparent'
-                    }`}
-                    style={{ color: currentView === 'history' ? '#2c7be5' : '#6e84a3' }}
+                    className={`nav-tab text-lg ${currentView === 'history' ? 'nav-tab-active' : 'text-neutral-500'}`}
                   >
                     📈 History
                   </button>
                   <button
                     onClick={() => setCurrentView('learn')}
-                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
-                      currentView === 'learn' ? 'border-current' : 'border-transparent'
-                    }`}
-                    style={{ color: currentView === 'learn' ? '#2c7be5' : '#6e84a3' }}
+                    className={`nav-tab text-lg ${currentView === 'learn' ? 'nav-tab-active' : 'text-neutral-500'}`}
                   >
                     📚 Learn
                   </button>
@@ -704,30 +696,25 @@ If you're experiencing several of these symptoms:
           {/* Profile Setup */}
           {!userProfile.profileComplete && (
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12" style={{ borderTop: '4px solid #2c7be5' }}>
-                <div className="text-center mb-10">
-                  <div className="text-6xl mb-4">📋</div>
-                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Set Up Your Profile</h2>
-                  <p className="text-lg" style={{ color: '#6e84a3' }}>We'll calculate your personalized protein targets using clinical formulas</p>
+              <div className="card shadow-hard p-8 md:p-12 border-t-4 border-primary-600 animate-scale-in">
+                <div className="text-center mb-12">
+                  <div className="text-7xl mb-4 animate-float">📋</div>
+                  <h2 className="text-5xl font-bold mb-4 text-neutral-900">Set Up Your Profile</h2>
+                  <p className="text-xl text-neutral-600">We'll calculate your personalized protein targets using clinical formulas</p>
                 </div>
 
-                <div className="space-y-6">
+                <div className="space-y-8">
                   {/* Age & Gender Row */}
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <div>
-                      <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
-                        Age <span className="text-red-500">*</span>
+                      <label className="block text-sm font-bold mb-3 text-neutral-900">
+                        Age <span className="text-error-500">*</span>
                       </label>
                       <input
                         type="number"
                         value={userProfile.age}
                         onChange={(e) => setUserProfile({...userProfile, age: e.target.value})}
-                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                        style={{
-                          borderColor: '#d2ddec',
-                          '--tw-ring-color': '#2c7be5',
-                          '--tw-ring-opacity': '0.2'
-                        }}
+                        className="input py-4 text-lg"
                         placeholder="e.g., 45"
                         min="18"
                         max="100"
@@ -735,18 +722,13 @@ If you're experiencing several of these symptoms:
                     </div>
 
                     <div>
-                      <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
-                        Gender <span className="text-red-500">*</span>
+                      <label className="block text-sm font-bold mb-3 text-neutral-900">
+                        Gender <span className="text-error-500">*</span>
                       </label>
                       <select
                         value={userProfile.gender}
                         onChange={(e) => setUserProfile({...userProfile, gender: e.target.value})}
-                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                        style={{
-                          borderColor: '#d2ddec',
-                          '--tw-ring-color': '#2c7be5',
-                          '--tw-ring-opacity': '0.2'
-                        }}
+                        className="input py-4 text-lg"
                       >
                         <option value="">Select...</option>
                         <option value="female">Female</option>
@@ -757,20 +739,15 @@ If you're experiencing several of these symptoms:
 
                   {/* Height */}
                   <div>
-                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
-                      Height <span className="text-red-500">*</span>
+                    <label className="block text-sm font-bold mb-3 text-neutral-900">
+                      Height <span className="text-error-500">*</span>
                     </label>
                     <div className="grid grid-cols-2 gap-4">
                       <input
                         type="number"
                         value={userProfile.heightFeet}
                         onChange={(e) => setUserProfile({...userProfile, heightFeet: e.target.value})}
-                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                        style={{
-                          borderColor: '#d2ddec',
-                          '--tw-ring-color': '#2c7be5',
-                          '--tw-ring-opacity': '0.2'
-                        }}
+                        className="input py-4 text-lg"
                         placeholder="Feet"
                         min="4"
                         max="7"
@@ -779,12 +756,7 @@ If you're experiencing several of these symptoms:
                         type="number"
                         value={userProfile.heightInches}
                         onChange={(e) => setUserProfile({...userProfile, heightInches: e.target.value})}
-                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                        style={{
-                          borderColor: '#d2ddec',
-                          '--tw-ring-color': '#2c7be5',
-                          '--tw-ring-opacity': '0.2'
-                        }}
+                        className="input py-4 text-lg"
                         placeholder="Inches"
                         min="0"
                         max="11"
@@ -794,19 +766,14 @@ If you're experiencing several of these symptoms:
 
                   {/* Weight */}
                   <div>
-                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
-                      Current Weight (lbs) <span className="text-red-500">*</span>
+                    <label className="block text-sm font-bold mb-3 text-neutral-900">
+                      Current Weight (lbs) <span className="text-error-500">*</span>
                     </label>
                     <input
                       type="number"
                       value={userProfile.weightLbs}
                       onChange={(e) => setUserProfile({...userProfile, weightLbs: e.target.value})}
-                      className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                      style={{
-                        borderColor: '#d2ddec',
-                        '--tw-ring-color': '#2c7be5',
-                        '--tw-ring-opacity': '0.2'
-                      }}
+                      className="input py-4 text-lg"
                       placeholder="e.g., 200"
                       min="50"
                       max="800"
@@ -815,18 +782,13 @@ If you're experiencing several of these symptoms:
 
                   {/* Medication */}
                   <div>
-                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
-                      GLP-1 Medication <span className="text-red-500">*</span>
+                    <label className="block text-sm font-bold mb-3 text-neutral-900">
+                      GLP-1 Medication <span className="text-error-500">*</span>
                     </label>
                     <select
                       value={userProfile.medication}
                       onChange={(e) => setUserProfile({...userProfile, medication: e.target.value})}
-                      className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                      style={{
-                        borderColor: '#d2ddec',
-                        '--tw-ring-color': '#2c7be5',
-                        '--tw-ring-opacity': '0.2'
-                      }}
+                      className="input py-4 text-lg"
                     >
                       <option value="">Select your medication...</option>
                       <option value="Ozempic">💉 Ozempic (semaglutide)</option>
@@ -844,17 +806,11 @@ If you're experiencing several of these symptoms:
                   <button
                     onClick={handleCalculateTargets}
                     disabled={!isProfileValid()}
-                    className={`w-full py-5 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 transform ${
+                    className={`btn w-full py-6 text-xl font-bold shadow-medium ${
                       isProfileValid()
-                        ? 'text-white hover:shadow-xl hover:scale-105'
-                        : 'cursor-not-allowed opacity-50'
+                        ? 'bg-gradient-primary text-white hover:shadow-glow-primary hover:scale-105'
+                        : 'bg-neutral-200 text-neutral-400 cursor-not-allowed opacity-60'
                     }`}
-                    style={{
-                      background: isProfileValid()
-                        ? 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)'
-                        : '#d2ddec',
-                      color: isProfileValid() ? '#ffffff' : '#6e84a3'
-                    }}
                   >
                     🎯 Calculate My Protein Targets
                   </button>
@@ -862,23 +818,23 @@ If you're experiencing several of these symptoms:
 
                 {/* Calorie Guidance After Calculation */}
                 {abwData.calorieGuidance.minimum > 0 && (
-                  <div className="mt-8 p-6 rounded-xl" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fffbeb 100%)', borderLeft: '4px solid #f6c343' }}>
-                    <h3 className="font-bold text-lg mb-3 flex items-center gap-2" style={{ color: '#12263f' }}>
+                  <div className="mt-8 alert-warning animate-slide-up">
+                    <h3 className="font-bold text-xl mb-3 flex items-center gap-2 text-neutral-900">
                       ⚠️ Important: Energy Requirements
                     </h3>
-                    <p className="mb-3" style={{ color: '#3e4b5b' }}>
+                    <p className="mb-4 text-neutral-700 leading-relaxed">
                       Your protein targets have been calculated! But remember: <strong>protein alone won't protect your muscles if you're not eating enough total calories.</strong>
                     </p>
-                    <div className="bg-white p-4 rounded-lg mb-3">
-                      <p className="font-semibold mb-2" style={{ color: '#12263f' }}>Your Minimum Calorie Needs:</p>
-                      <p className="text-2xl font-bold" style={{ color: '#2c7be5' }}>
+                    <div className="bg-white p-5 rounded-xl mb-4 border-2 border-warning-200 shadow-soft">
+                      <p className="font-semibold mb-2 text-neutral-900">Your Minimum Calorie Needs:</p>
+                      <p className="text-3xl font-bold text-gradient-primary">
                         At least {abwData.calorieGuidance.minimum} calories/day
                       </p>
-                      <p className="text-sm mt-2" style={{ color: '#6e84a3' }}>
+                      <p className="text-sm mt-2 text-neutral-500">
                         Estimated needs: ~{abwData.calorieGuidance.estimated} calories/day (varies with activity)
                       </p>
                     </div>
-                    <p className="text-sm" style={{ color: '#3e4b5b' }}>
+                    <p className="text-sm text-neutral-600 leading-relaxed">
                       When you undereat, your body burns protein for energy instead of using it to maintain muscle. Learn more in the <strong>Education</strong> section.
                     </p>
                   </div>
@@ -891,14 +847,14 @@ If you're experiencing several of these symptoms:
           {currentView === 'track' && userProfile.profileComplete && abwData.proteinTargets.minimum > 0 && (
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
               {/* Calorie Reminder */}
-              <div className="bg-amber-50 border-2 rounded-xl p-4" style={{ borderColor: '#fde68a' }}>
+              <div className="alert-info animate-slide-down">
                 <div className="flex items-start gap-3">
-                  <div className="text-2xl">💡</div>
+                  <div className="text-3xl">💡</div>
                   <div className="flex-1">
-                    <p className="font-semibold" style={{ color: '#12263f' }}>
+                    <p className="font-bold text-lg text-neutral-900 mb-1">
                       Daily Reminder: Don't forget your minimum calories!
                     </p>
-                    <p className="text-sm" style={{ color: '#6e84a3' }}>
+                    <p className="text-sm text-neutral-600">
                       {userProfile.gender === 'female' ? 'Women' : 'Men'}: At least {abwData.calorieGuidance.minimum} calories/day. Undereating causes muscle loss even with adequate protein.
                     </p>
                   </div>
@@ -906,115 +862,109 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Protein Targets Card */}
-              <div className="bg-white rounded-2xl shadow-xl p-8" style={{ borderTop: '4px solid #059669' }}>
+              <div className="card shadow-hard p-8 border-t-4 border-success-600 animate-slide-up">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
                   <div>
-                    <h2 className="text-3xl font-bold mb-2" style={{ color: '#12263f' }}>Your Daily Protein Targets</h2>
-                    <p style={{ color: '#6e84a3' }}>
-                      Based on Adjusted Body Weight (ABW): <strong>{abwData.abwKg} kg</strong> | BMI: <strong>{abwData.bmi}</strong>
+                    <h2 className="section-header">Your Daily Protein Targets</h2>
+                    <p className="text-neutral-600">
+                      Based on Adjusted Body Weight (ABW): <strong className="text-primary-600">{abwData.abwKg} kg</strong> | BMI: <strong className="text-primary-600">{abwData.bmi}</strong>
                     </p>
                   </div>
                   <button
                     onClick={handleEditProfile}
-                    className="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md"
-                    style={{ color: '#2c7be5', backgroundColor: '#edf2f9' }}
+                    className="btn-outline px-5 py-3 text-sm"
                   >
                     ✏️ Edit Profile
                   </button>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fff5f5', borderColor: '#feb2b2' }}>
-                    <div className="text-4xl mb-3">🎯</div>
-                    <div className="text-sm font-bold mb-2" style={{ color: '#e63757' }}>MINIMUM</div>
-                    <div className="text-5xl font-bold mb-2" style={{ color: '#e63757' }}>{abwData.proteinTargets.minimum}g</div>
-                    <div className="text-xs mb-2" style={{ color: '#e63757' }}>1.2 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Essential for muscle preservation</div>
+                  <div className="card-hover text-center p-6 bg-error-50 border-2 border-error-200">
+                    <div className="text-5xl mb-3">🎯</div>
+                    <div className="text-sm font-bold mb-2 text-error-600 uppercase tracking-wider">Minimum</div>
+                    <div className="text-6xl font-bold mb-2 text-error-600">{abwData.proteinTargets.minimum}g</div>
+                    <div className="text-xs mb-2 font-semibold text-error-500">1.2 g/kg ABW</div>
+                    <div className="text-sm text-neutral-600">Essential for muscle preservation</div>
                   </div>
 
-                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
-                    <div className="text-4xl mb-3">⭐</div>
-                    <div className="text-sm font-bold mb-2" style={{ color: '#f6c343' }}>TARGET</div>
-                    <div className="text-5xl font-bold mb-2" style={{ color: '#f6c343' }}>{abwData.proteinTargets.target}g</div>
-                    <div className="text-xs mb-2" style={{ color: '#f6c343' }}>1.4 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Better muscle protection</div>
+                  <div className="card-hover text-center p-6 bg-warning-50 border-2 border-warning-200">
+                    <div className="text-5xl mb-3">⭐</div>
+                    <div className="text-sm font-bold mb-2 text-warning-600 uppercase tracking-wider">Target</div>
+                    <div className="text-6xl font-bold mb-2 text-warning-600">{abwData.proteinTargets.target}g</div>
+                    <div className="text-xs mb-2 font-semibold text-warning-500">1.4 g/kg ABW</div>
+                    <div className="text-sm text-neutral-600">Better muscle protection</div>
                   </div>
 
-                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac' }}>
-                    <div className="text-4xl mb-3">🏆</div>
-                    <div className="text-sm font-bold mb-2" style={{ color: '#059669' }}>HIGHER PROTEIN</div>
-                    <div className="text-5xl font-bold mb-2" style={{ color: '#059669' }}>{abwData.proteinTargets.higher}g</div>
-                    <div className="text-xs mb-2" style={{ color: '#059669' }}>1.6 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Enhanced preservation</div>
+                  <div className="card-hover text-center p-6 bg-success-50 border-2 border-success-200">
+                    <div className="text-5xl mb-3">🏆</div>
+                    <div className="text-sm font-bold mb-2 text-success-600 uppercase tracking-wider">Higher Protein</div>
+                    <div className="text-6xl font-bold mb-2 text-success-600">{abwData.proteinTargets.higher}g</div>
+                    <div className="text-xs mb-2 font-semibold text-success-500">1.6 g/kg ABW</div>
+                    <div className="text-sm text-neutral-600">Enhanced preservation</div>
                   </div>
                 </div>
               </div>
 
               {/* Daily Progress Card */}
-              <div className="bg-white rounded-2xl shadow-xl p-8">
+              <div className="card shadow-hard p-8">
                 <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-                  <h2 className="text-3xl font-bold" style={{ color: '#12263f' }}>Today's Progress</h2>
+                  <h2 className="section-header">Today's Progress</h2>
                   <button
                     onClick={handleResetDay}
-                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
-                    style={{ color: '#e63757', backgroundColor: '#fff5f5' }}
+                    className="btn bg-error-50 text-error-700 hover:bg-error-100 border-2 border-error-200 px-4 py-2 text-sm"
                   >
                     🔄 Reset Day
                   </button>
                 </div>
 
                 {/* Status Display */}
-                <div className={`p-8 rounded-2xl mb-8 border-2 transition-all duration-300`} style={{
-                  backgroundColor: statusColor === 'red' ? '#fff5f5' :
-                                  statusColor === 'yellow' ? '#fffbeb' :
-                                  statusColor === 'green' ? '#f0fdf4' :
-                                  statusColor === 'gold' ? '#fef3c7' : '#f9fbfd',
-                  borderColor: statusColor === 'red' ? '#feb2b2' :
-                               statusColor === 'yellow' ? '#fde68a' :
-                               statusColor === 'green' ? '#86efac' :
-                               statusColor === 'gold' ? '#fde047' : '#d2ddec'
-                }}>
+                <div className={`p-10 rounded-3xl mb-8 border-2 transition-all duration-300 ${
+                  statusColor === 'red' ? 'status-critical' :
+                  statusColor === 'yellow' ? 'status-warning' :
+                  statusColor === 'green' ? 'status-success' :
+                  statusColor === 'gold' ? 'status-optimal' : 'bg-neutral-100 border-neutral-200'
+                }`}>
                   <div className="text-center">
-                    <div className="text-7xl font-bold mb-3" style={{
-                      color: statusColor === 'red' ? '#e63757' :
-                             statusColor === 'yellow' ? '#f6c343' :
-                             statusColor === 'green' ? '#059669' :
-                             statusColor === 'gold' ? '#f59e0b' : '#6e84a3'
-                    }}>{dailyProtein}g</div>
-                    <div className="text-xl font-semibold mb-4" style={{ color: '#12263f' }}>{currentStatus}</div>
-                    <div className="rounded-full h-8 overflow-hidden" style={{ backgroundColor: '#edf2f9' }}>
+                    <div className={`text-8xl font-bold mb-4 ${
+                      statusColor === 'red' ? 'text-error-600' :
+                      statusColor === 'yellow' ? 'text-warning-600' :
+                      statusColor === 'green' ? 'text-success-600' :
+                      statusColor === 'gold' ? 'text-gradient-energy' : 'text-neutral-500'
+                    }`}>{dailyProtein}g</div>
+                    <div className="text-2xl font-bold mb-6 text-neutral-900">{currentStatus}</div>
+                    <div className="progress-container h-6">
                       <div
-                        className="h-8 rounded-full transition-all duration-500"
+                        className={`progress-bar ${
+                          statusColor === 'red' ? 'from-error-500 to-error-600' :
+                          statusColor === 'yellow' ? 'from-warning-500 to-warning-600' :
+                          statusColor === 'green' ? 'from-success-500 to-success-600' :
+                          statusColor === 'gold' ? 'from-warning-500 to-success-600' :
+                          'from-neutral-400 to-neutral-500'
+                        }`}
                         style={{
-                          width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`,
-                          background: statusColor === 'red' ? 'linear-gradient(90deg, #e63757 0%, #f97316 100%)' :
-                                     statusColor === 'yellow' ? 'linear-gradient(90deg, #f6c343 0%, #f59e0b 100%)' :
-                                     statusColor === 'green' ? 'linear-gradient(90deg, #059669 0%, #10b981 100%)' :
-                                     statusColor === 'gold' ? 'linear-gradient(90deg, #f59e0b 0%, #eab308 100%)' :
-                                     'linear-gradient(90deg, #6e84a3 0%, #95a5ba 100%)'
+                          width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`
                         }}
                       />
                     </div>
-                    <div className="flex justify-between text-sm mt-3" style={{ color: '#6e84a3' }}>
+                    <div className="flex justify-between text-sm mt-4 text-neutral-600 font-semibold">
                       <span>0g</span>
-                      <span className="font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum</span>
+                      <span className="text-base">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum</span>
                       <span>{abwData.proteinTargets.higher}g</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Category Tabs */}
-                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                <div className="flex gap-3 mb-8 overflow-x-auto pb-2 scrollbar-custom">
                   {Object.keys(proteinFoods).map((category) => (
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
-                      className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition-all duration-200`}
-                      style={{
-                        backgroundColor: activeCategory === category ? '#2c7be5' : '#edf2f9',
-                        color: activeCategory === category ? '#ffffff' : '#3e4b5b',
-                        boxShadow: activeCategory === category ? '0 4px 6px rgba(44, 123, 229, 0.3)' : 'none'
-                      }}
+                      className={`px-8 py-4 rounded-xl font-semibold whitespace-nowrap transition-all duration-200 ${
+                        activeCategory === category
+                          ? 'bg-primary-600 text-white shadow-glow-primary'
+                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200'
+                      }`}
                     >
                       {formatCategoryName(category)}
                     </button>
@@ -1027,60 +977,41 @@ If you're experiencing several of these symptoms:
                     <button
                       key={food.name}
                       onClick={() => quickAddProtein(food.name, food.grams)}
-                      className="p-4 rounded-xl text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg border-2"
-                      style={{
-                        background: 'linear-gradient(135deg, #edf2f9 0%, #d2e6ff 100%)',
-                        borderColor: '#d2ddec'
-                      }}
+                      className="food-btn"
                     >
-                      <div className="text-4xl mb-2">{food.icon}</div>
-                      <div className="text-xs font-bold mb-1" style={{ color: '#12263f' }}>{food.name}</div>
-                      <div className="text-xl font-bold" style={{ color: '#2c7be5' }}>+{food.grams}g</div>
+                      <div className="text-5xl mb-2">{food.icon}</div>
+                      <div className="text-xs font-bold mb-2 text-neutral-900 leading-tight">{food.name}</div>
+                      <div className="text-2xl font-bold text-primary-600">+{food.grams}g</div>
                     </button>
                   ))}
                 </div>
 
                 {/* Custom Add */}
-                <div className="p-6 rounded-xl border-2 border-dashed" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
-                  <h3 className="font-bold mb-4" style={{ color: '#12263f' }}>Add Custom Entry</h3>
-                  <div className="flex gap-3 flex-wrap">
+                <div className="p-8 rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50/50">
+                  <h3 className="font-bold text-lg mb-6 text-neutral-900">Add Custom Entry</h3>
+                  <div className="flex gap-4 flex-wrap">
                     <input
                       type="text"
                       value={customFood}
                       onChange={(e) => setCustomFood(e.target.value)}
                       placeholder="Food name (optional)"
-                      className="flex-1 min-w-[150px] px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                      style={{
-                        borderColor: '#d2ddec',
-                        '--tw-ring-color': '#2c7be5',
-                        '--tw-ring-opacity': '0.2'
-                      }}
+                      className="input flex-1 min-w-[200px]"
                     />
                     <input
                       type="number"
                       value={customAmount}
                       onChange={(e) => setCustomAmount(e.target.value)}
                       placeholder="Protein (g)"
-                      className="w-32 px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-4"
-                      style={{
-                        borderColor: '#d2ddec',
-                        '--tw-ring-color': '#2c7be5',
-                        '--tw-ring-opacity': '0.2'
-                      }}
+                      className="input w-40"
                     />
                     <button
                       onClick={handleAddCustom}
                       disabled={!customAmount || parseInt(customAmount) <= 0}
-                      className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
-                        customAmount && parseInt(customAmount) > 0 ? 'hover:shadow-lg transform hover:scale-105' : ''
+                      className={`btn px-8 ${
+                        customAmount && parseInt(customAmount) > 0
+                          ? 'btn-primary'
+                          : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
                       }`}
-                      style={{
-                        background: customAmount && parseInt(customAmount) > 0
-                          ? 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)'
-                          : '#d2ddec',
-                        color: customAmount && parseInt(customAmount) > 0 ? '#ffffff' : '#6e84a3',
-                        cursor: customAmount && parseInt(customAmount) > 0 ? 'pointer' : 'not-allowed'
-                      }}
                     >
                       Add
                     </button>
@@ -1349,28 +1280,26 @@ If you're experiencing several of these symptoms:
 
           {/* Paywall Modal */}
           {showPaywall && (
-            <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}>
-              <div className="bg-white rounded-2xl p-10 max-w-md shadow-2xl" style={{ borderTop: '4px solid #2c7be5' }}>
-                <div className="text-center mb-8">
-                  <div className="text-7xl mb-4">💪</div>
-                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Continue Your Journey</h2>
-                  <p className="text-lg" style={{ color: '#6e84a3' }}>Your 7-day trial has ended. Subscribe to keep protecting your muscle mass!</p>
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50 bg-neutral-900/80 backdrop-blur-lg">
+              <div className="card shadow-hard p-12 max-w-md border-t-4 border-primary-600 animate-scale-in">
+                <div className="text-center mb-10">
+                  <div className="text-8xl mb-6 animate-float">💪</div>
+                  <h2 className="text-5xl font-bold mb-4 text-neutral-900">Continue Your Journey</h2>
+                  <p className="text-xl text-neutral-600 leading-relaxed">Your 7-day trial has ended. Subscribe to keep protecting your muscle mass!</p>
                 </div>
-                <div className="space-y-4">
+                <div className="space-y-5">
                   <button
                     onClick={() => window.location.href = 'https://buy.stripe.com/your-link'}
-                    className="w-full py-5 rounded-xl font-bold text-lg text-white shadow-xl transition-all duration-200 transform hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' }}
+                    className="btn btn-success w-full py-6 text-xl font-bold shadow-medium hover:shadow-glow-success"
                   >
                     Monthly Plan - $17/mo
                   </button>
                   <button
                     onClick={() => window.location.href = 'https://buy.stripe.com/your-lifetime-link'}
-                    className="w-full py-5 rounded-xl font-bold text-lg text-white shadow-xl transition-all duration-200 transform hover:scale-105"
-                    style={{ background: 'linear-gradient(135deg, #2c7be5 0%, #7c3aed 100%)' }}
+                    className="btn w-full py-6 text-xl font-bold text-white bg-gradient-premium shadow-medium hover:shadow-glow-primary"
                   >
                     Lifetime Access - $97
-                    <span className="block text-sm font-normal opacity-90">Save 76% • Best Value!</span>
+                    <span className="block text-base font-medium opacity-90 mt-1">Save 76% • Best Value!</span>
                   </button>
                 </div>
               </div>
@@ -1378,13 +1307,13 @@ If you're experiencing several of these symptoms:
           )}
 
           {/* Footer */}
-          <footer className="mt-16 py-10" style={{ backgroundColor: '#12263f' }}>
+          <footer className="mt-20 py-12 bg-neutral-900">
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-              <p className="text-sm mb-3" style={{ color: '#95a5ba' }}>
+              <p className="text-base mb-4 text-neutral-300 leading-relaxed">
                 ⚠️ This tool is not medical advice. Not for use with kidney disease.
                 Consult your healthcare provider before making dietary changes.
               </p>
-              <p className="text-xs" style={{ color: '#6e84a3' }}>
+              <p className="text-sm text-neutral-500">
                 © 2024 GLP-1 Muscle Rescue Protocol | Created by Dan, RD
               </p>
             </div>
