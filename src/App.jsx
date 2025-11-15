@@ -1,0 +1,1398 @@
+import React, { useState, useEffect } from 'react';
+import './App.css';
+
+// GLP-1 Protein Tracker with ABW Calculations
+// Uses clinically-validated Adjusted Body Weight formulas
+
+function App() {
+  // User profile state
+  const [userProfile, setUserProfile] = useState({
+    age: '',
+    gender: '',
+    weightLbs: '',
+    heightFeet: '',
+    heightInches: '',
+    medication: '',
+    disclaimerAccepted: false,
+    hasKidneyDisease: null,
+    profileComplete: false
+  });
+
+  // Calculated values
+  const [abwData, setAbwData] = useState({
+    bmi: 0,
+    ibwKg: 0,
+    abwKg: 0,
+    adjustmentFactor: 0,
+    proteinTargets: {
+      minimum: 0,
+      target: 0,
+      higher: 0
+    },
+    calorieGuidance: {
+      minimum: 0,
+      estimated: 0
+    }
+  });
+
+  // Navigation state
+  const [currentView, setCurrentView] = useState('track'); // track, history, learn
+
+  // Daily tracking state
+  const [dailyProtein, setDailyProtein] = useState(0);
+  const [proteinLog, setProteinLog] = useState([]);
+  const [currentStatus, setCurrentStatus] = useState('');
+  const [statusColor, setStatusColor] = useState('gray');
+  const [customAmount, setCustomAmount] = useState('');
+  const [customFood, setCustomFood] = useState('');
+  const [activeCategory, setActiveCategory] = useState('meat');
+
+  // Streak and achievements
+  const [currentStreak, setCurrentStreak] = useState(0);
+  const [longestStreak, setLongestStreak] = useState(0);
+  const [achievements, setAchievements] = useState([]);
+  const [showAchievement, setShowAchievement] = useState(null);
+
+  // Trial state
+  const [trialDaysRemaining, setTrialDaysRemaining] = useState(7);
+  const [showPaywall, setShowPaywall] = useState(false);
+
+  // Update status when protein intake changes
+  useEffect(() => {
+    updateProteinStatus();
+  }, [dailyProtein, abwData.proteinTargets.minimum]);
+
+  // Check trial status
+  useEffect(() => {
+    checkTrialStatus();
+  }, []);
+
+  // Load saved data on mount
+  useEffect(() => {
+    const savedProfile = localStorage.getItem('userProfile');
+    const savedAbwData = localStorage.getItem('abwData');
+    const today = new Date().toDateString();
+    const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+    const savedAchievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+
+    if (savedProfile) {
+      const profile = JSON.parse(savedProfile);
+      setUserProfile(profile);
+    }
+
+    if (savedAbwData) {
+      setAbwData(JSON.parse(savedAbwData));
+    }
+
+    if (savedTracking[today]) {
+      setDailyProtein(savedTracking[today].total);
+      setProteinLog(savedTracking[today].log);
+    }
+
+    setAchievements(savedAchievements);
+    calculateStreak();
+  }, []);
+
+  // Calculate streak
+  const calculateStreak = () => {
+    const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+    let streak = 0;
+    let longest = 0;
+    let tempStreak = 0;
+
+    // Check last 365 days for streaks
+    for (let i = 0; i < 365; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+
+      if (savedTracking[dateStr] && savedTracking[dateStr].metTarget) {
+        tempStreak++;
+        if (i === 0) streak = tempStreak; // Current streak
+      } else {
+        if (tempStreak > longest) longest = tempStreak;
+        tempStreak = 0;
+      }
+    }
+
+    if (tempStreak > longest) longest = tempStreak;
+    setCurrentStreak(streak);
+    setLongestStreak(Math.max(longest, streak));
+  };
+
+  // Check and award achievements
+  const checkAchievements = (streak, total) => {
+    const newAchievements = [];
+    const existingAchievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+
+    const achievementsList = [
+      { id: 'first_day', name: 'First Day Complete', description: 'Tracked your first day of protein', icon: '🎯', condition: () => true },
+      { id: 'streak_3', name: '3-Day Streak', description: 'Hit your target 3 days in a row', icon: '🔥', condition: () => streak >= 3 },
+      { id: 'streak_7', name: 'Week Warrior', description: 'Hit your target 7 days in a row', icon: '⭐', condition: () => streak >= 7 },
+      { id: 'streak_30', name: '30-Day Champion', description: 'Hit your target 30 days in a row', icon: '🏆', condition: () => streak >= 30 },
+      { id: 'higher_protein', name: 'High Protein Day', description: 'Hit the higher protein target (1.6 g/kg)', icon: '💪', condition: () => total >= abwData.proteinTargets.higher },
+    ];
+
+    achievementsList.forEach(achievement => {
+      if (achievement.condition() && !existingAchievements.some(a => a.id === achievement.id)) {
+        newAchievements.push(achievement);
+        existingAchievements.push(achievement);
+      }
+    });
+
+    if (newAchievements.length > 0) {
+      localStorage.setItem('achievements', JSON.stringify(existingAchievements));
+      setAchievements(existingAchievements);
+      setShowAchievement(newAchievements[0]);
+      setTimeout(() => setShowAchievement(null), 5000);
+    }
+  };
+
+  /**
+   * Calculate Adjusted Body Weight and calorie guidance
+   */
+  const handleCalculateTargets = () => {
+    const weightKg = parseFloat(userProfile.weightLbs) * 0.4536;
+    const totalHeightInches = parseInt(userProfile.heightFeet) * 12 + parseInt(userProfile.heightInches);
+    const heightM = totalHeightInches * 0.0254;
+
+    // Calculate BMI
+    const bmi = weightKg / (heightM * heightM);
+
+    // Calculate IBW (Hamwi formula)
+    const baseHeight = 60;
+    const inchesOver5Feet = totalHeightInches - baseHeight;
+    const ibwLbs = userProfile.gender === 'female'
+      ? 100 + (inchesOver5Feet * 5)
+      : 106 + (inchesOver5Feet * 6);
+    const ibwKg = ibwLbs * 0.4536;
+
+    // Determine adjustment factor based on BMI
+    let adjustmentFactor = 0.4;
+    if (bmi > 40) {
+      adjustmentFactor = 0.25;
+    } else if (bmi > 35) {
+      adjustmentFactor = 0.3;
+    } else if (bmi > 30) {
+      adjustmentFactor = 0.35;
+    }
+
+    // Calculate ABW
+    const abwKg = ibwKg + adjustmentFactor * (weightKg - ibwKg);
+
+    // Calculate protein targets
+    const proteinTargets = {
+      minimum: Math.round(abwKg * 1.2),
+      target: Math.round(abwKg * 1.4),
+      higher: Math.round(abwKg * 1.6)
+    };
+
+    // Calculate calorie guidance
+    const calorieGuidance = {
+      minimum: userProfile.gender === 'female' ? 1200 : 1500,
+      estimated: Math.round(abwKg * 25) // Rough estimate for sedentary
+    };
+
+    const calculatedData = {
+      bmi: Math.round(bmi * 10) / 10,
+      ibwKg: Math.round(ibwKg * 10) / 10,
+      abwKg: Math.round(abwKg * 10) / 10,
+      adjustmentFactor,
+      proteinTargets,
+      calorieGuidance
+    };
+
+    setAbwData(calculatedData);
+    setUserProfile({...userProfile, profileComplete: true});
+
+    // Save to localStorage
+    localStorage.setItem('abwData', JSON.stringify(calculatedData));
+    localStorage.setItem('userProfile', JSON.stringify({...userProfile, profileComplete: true}));
+  };
+
+  /**
+   * Update protein intake status with color coding
+   */
+  const updateProteinStatus = () => {
+    if (!abwData.proteinTargets.minimum) return;
+
+    const percentage = (dailyProtein / abwData.proteinTargets.minimum) * 100;
+
+    if (percentage < 75) {
+      setCurrentStatus('CRITICAL: Severe muscle loss risk');
+      setStatusColor('red');
+    } else if (percentage < 100) {
+      setCurrentStatus('LOW: Below minimum target');
+      setStatusColor('yellow');
+    } else if (percentage < 117) {
+      setCurrentStatus('GOOD: Meeting minimum');
+      setStatusColor('green');
+    } else {
+      setCurrentStatus('OPTIMAL: Excellent!');
+      setStatusColor('gold');
+    }
+  };
+
+  /**
+   * Add protein from quick-add buttons
+   */
+  const quickAddProtein = (foodName, grams) => {
+    const newEntry = {
+      food: foodName,
+      grams: grams,
+      time: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    };
+
+    const newLog = [...proteinLog, newEntry];
+    const newTotal = dailyProtein + grams;
+
+    setProteinLog(newLog);
+    setDailyProtein(newTotal);
+
+    // Save to localStorage
+    const today = new Date().toDateString();
+    const savedData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+    const metTarget = newTotal >= abwData.proteinTargets.minimum;
+
+    savedData[today] = {
+      total: newTotal,
+      log: newLog,
+      target: abwData.proteinTargets.minimum,
+      metTarget: metTarget
+    };
+    localStorage.setItem('proteinTracking', JSON.stringify(savedData));
+
+    // Check achievements
+    if (metTarget) {
+      calculateStreak();
+      const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+      let streak = 0;
+      for (let i = 0; i < 365; i++) {
+        const date = new Date();
+        date.setDate(date.getDate() - i);
+        const dateStr = date.toDateString();
+        if (savedTracking[dateStr]?.metTarget) {
+          streak++;
+        } else {
+          break;
+        }
+      }
+      checkAchievements(streak, newTotal);
+    }
+  };
+
+  /**
+   * Add custom protein
+   */
+  const handleAddCustom = () => {
+    const amount = parseInt(customAmount);
+    if (amount > 0) {
+      const foodName = customFood.trim() || 'Custom Entry';
+      quickAddProtein(foodName, amount);
+      setCustomAmount('');
+      setCustomFood('');
+    }
+  };
+
+  /**
+   * Reset daily tracking
+   */
+  const handleResetDay = () => {
+    if (window.confirm('Reset today\'s protein tracking? This cannot be undone.')) {
+      setDailyProtein(0);
+      setProteinLog([]);
+      const today = new Date().toDateString();
+      const savedData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+      delete savedData[today];
+      localStorage.setItem('proteinTracking', JSON.stringify(savedData));
+      calculateStreak();
+    }
+  };
+
+  /**
+   * Edit profile
+   */
+  const handleEditProfile = () => {
+    setUserProfile({...userProfile, profileComplete: false});
+  };
+
+  /**
+   * Check trial status
+   */
+  const checkTrialStatus = () => {
+    const startDate = localStorage.getItem('trialStartDate');
+    if (!startDate) {
+      localStorage.setItem('trialStartDate', new Date().toISOString());
+    } else {
+      const daysSinceStart = Math.floor(
+        (new Date() - new Date(startDate)) / (1000 * 60 * 60 * 24)
+      );
+      const remaining = Math.max(0, 7 - daysSinceStart);
+      setTrialDaysRemaining(remaining);
+
+      if (remaining === 0 && !localStorage.getItem('isPaid')) {
+        setShowPaywall(true);
+      }
+    }
+  };
+
+  // Get historical data for charts
+  const getHistoricalData = (days = 30) => {
+    const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+    const data = [];
+
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toDateString();
+      const dayData = savedTracking[dateStr];
+
+      data.push({
+        date: dateStr,
+        shortDate: `${date.getMonth() + 1}/${date.getDate()}`,
+        protein: dayData?.total || 0,
+        metTarget: dayData?.metTarget || false,
+        target: dayData?.target || abwData.proteinTargets.minimum
+      });
+    }
+
+    return data;
+  };
+
+  // Calculate achievement rate
+  const getAchievementRate = () => {
+    const data = getHistoricalData(30);
+    const daysWithData = data.filter(d => d.protein > 0).length;
+    const daysMetTarget = data.filter(d => d.metTarget).length;
+    return daysWithData > 0 ? Math.round((daysMetTarget / daysWithData) * 100) : 0;
+  };
+
+  // Organized protein food options by type
+  const proteinFoods = {
+    meat: [
+      { name: 'Chicken Breast (4oz)', grams: 35, icon: '🍗' },
+      { name: 'Turkey Breast (4oz)', grams: 32, icon: '🦃' },
+      { name: 'Lean Steak (4oz)', grams: 32, icon: '🥩' },
+      { name: 'Pork Tenderloin (4oz)', grams: 30, icon: '🍖' },
+      { name: 'Ground Turkey (4oz)', grams: 28, icon: '🍔' },
+      { name: 'Chicken Thigh (4oz)', grams: 28, icon: '🍗' },
+      { name: 'Turkey Burger (4oz)', grams: 26, icon: '🍔' },
+      { name: 'Turkey Sausage (2)', grams: 14, icon: '🌭' },
+      { name: 'Deli Turkey (4oz)', grams: 20, icon: '🥪' },
+      { name: 'Canadian Bacon (3)', grams: 15, icon: '🥓' },
+      { name: 'Salmon (4oz)', grams: 28, icon: '🐠' },
+      { name: 'Tuna (5oz can)', grams: 30, icon: '🐟' },
+      { name: 'White Fish (5oz)', grams: 30, icon: '🐟' },
+      { name: 'Shrimp (4oz)', grams: 24, icon: '🦐' },
+    ],
+    dairy: [
+      { name: 'Greek Yogurt (6oz)', grams: 15, icon: '🥄' },
+      { name: 'Cottage Cheese (1/2 cup)', grams: 14, icon: '🧀' },
+      { name: 'String Cheese', grams: 7, icon: '🧀' },
+      { name: 'Mozzarella (1oz)', grams: 6, icon: '🧀' },
+      { name: 'Cheddar (1oz)', grams: 7, icon: '🧀' },
+      { name: 'Milk (8oz)', grams: 8, icon: '🥛' },
+    ],
+    plantbased: [
+      { name: 'Seitan (4oz)', grams: 28, icon: '🥙' },
+      { name: 'Tempeh (4oz)', grams: 21, icon: '🌱' },
+      { name: 'Tofu (6oz)', grams: 18, icon: '🥡' },
+      { name: 'Edamame (1 cup)', grams: 18, icon: '🫛' },
+      { name: 'Lentils (1 cup)', grams: 18, icon: '🍲' },
+      { name: 'Black Beans (1 cup)', grams: 15, icon: '🫘' },
+      { name: 'Chickpeas (1 cup)', grams: 15, icon: '🫘' },
+      { name: 'Quinoa (1 cup)', grams: 8, icon: '🌾' },
+    ],
+    eggs: [
+      { name: '3 Egg Whites', grams: 11, icon: '🍳' },
+      { name: '2 Whole Eggs', grams: 12, icon: '🥚' },
+      { name: '3 Whole Eggs', grams: 18, icon: '🥚' },
+      { name: '4 Egg Whites', grams: 14, icon: '🍳' },
+      { name: '1 Hard Boiled Egg', grams: 6, icon: '🥚' },
+    ],
+    supplements: [
+      { name: 'Shake/Bar (15g)', grams: 15, icon: '🥤' },
+      { name: 'Shake/Bar (20g)', grams: 20, icon: '🍫' },
+      { name: 'Shake/Bar (25g)', grams: 25, icon: '🥛' },
+      { name: 'Shake/Bar (30g)', grams: 30, icon: '💪' },
+      { name: 'Shake/Bar (35g)', grams: 35, icon: '🏋️' },
+      { name: 'Shake/Bar (40g)', grams: 40, icon: '💯' },
+    ],
+    snacks: [
+      { name: 'Beef Jerky (1oz)', grams: 9, icon: '🥓' },
+      { name: 'Turkey Jerky (1oz)', grams: 10, icon: '🦃' },
+      { name: 'Almonds (1/4 cup)', grams: 8, icon: '🥜' },
+      { name: 'Peanut Butter (2 tbsp)', grams: 8, icon: '🥜' },
+      { name: 'Pumpkin Seeds (1/4 cup)', grams: 9, icon: '🌰' },
+      { name: 'Roasted Chickpeas (1/2 cup)', grams: 7, icon: '🫘' },
+    ]
+  };
+
+  const isProfileValid = () => {
+    return userProfile.age && userProfile.gender && userProfile.weightLbs &&
+           userProfile.heightFeet && userProfile.heightInches && userProfile.medication;
+  };
+
+  // Format category names for display
+  const formatCategoryName = (category) => {
+    const categoryNames = {
+      meat: 'Meat & Poultry',
+      dairy: 'Dairy',
+      plantbased: 'Plant-Based',
+      eggs: 'Eggs',
+      supplements: 'Supplements',
+      snacks: 'Snacks'
+    };
+    return categoryNames[category] || category;
+  };
+
+  // Education content
+  const educationContent = [
+    {
+      id: 'why-protein',
+      title: 'Why Protein Matters on GLP-1 Medications',
+      icon: '💊',
+      content: `GLP-1 medications are incredibly effective for weight loss, but they come with a critical challenge: they can lead to significant muscle loss alongside fat loss.
+
+**The Problem:**
+- Studies show that 25-40% of weight lost on GLP-1 medications can be lean muscle mass
+- Muscle loss leads to: slower metabolism, decreased strength, increased fall risk, and reduced quality of life
+
+**The Solution:**
+- Adequate protein intake is your primary defense against muscle loss
+- Protein provides the building blocks (amino acids) your body needs to preserve muscle
+- When combined with strength training, proper protein intake can dramatically reduce muscle loss during rapid weight loss`
+    },
+    {
+      id: 'energy-balance',
+      title: 'Energy Balance & Muscle Preservation',
+      icon: '⚖️',
+      content: `Getting enough protein is only part of the equation. You also need adequate total calories (energy) to preserve muscle.
+
+**Why Energy Matters:**
+When you don't eat enough total calories, your body enters a catabolic state where it breaks down muscle for energy—even if you're eating enough protein. Your dietary protein gets burned for fuel instead of being used to maintain muscle.
+
+**Minimum Calorie Guidelines:**
+- Women: At least 1,200 calories/day
+- Men: At least 1,500 calories/day
+- Most people need MORE based on height, activity level, and muscle mass
+
+**The Reality:**
+Many GLP-1 users struggle with extreme appetite suppression and unintentionally eat far below their needs. This accelerates muscle loss, slows metabolism, and can lead to nutrient deficiencies.
+
+**Bottom Line:**
+Meeting your protein target while severely undereating won't protect your muscles. You need both adequate protein AND adequate total energy.`
+    },
+    {
+      id: 'strength-training',
+      title: 'Strength Training: The Missing Piece',
+      icon: '🏋️',
+      content: `Protein intake alone isn't enough—you need to give your body a reason to keep that muscle.
+
+**Why Strength Training Works:**
+- Sends a powerful signal to your body: "We need this muscle!"
+- Helps maintain or even build muscle during weight loss
+- Increases metabolism and bone density
+- Improves insulin sensitivity
+
+**What You Need:**
+- 2-3 sessions per week
+- Focus on compound movements (squats, pushes, pulls)
+- Progressive overload (gradually increase weight/difficulty)
+- You don't need a gym—bodyweight exercises work too
+
+**The Evidence:**
+Research shows that combining adequate protein with resistance training can preserve 95%+ of lean mass during weight loss, compared to losing 25-40% without it.
+
+**Start Simple:**
+- Bodyweight squats, push-ups, rows
+- Resistance bands
+- Light dumbbells
+- Work with a trainer if possible`
+    },
+    {
+      id: 'undereating-signs',
+      title: 'Warning Signs You\'re Undereating',
+      icon: '⚠️',
+      content: `GLP-1 medications can suppress appetite so much that you may not realize you're not eating enough. Watch for these red flags:
+
+**Physical Signs:**
+☐ Extreme fatigue or weakness
+☐ Hair thinning or loss
+☐ Brittle nails
+☐ Feeling cold all the time
+☐ Dizziness or lightheadedness
+☐ Difficulty concentrating ("brain fog")
+
+**Metabolic Signs:**
+☐ Weight loss has completely stalled
+☐ Loss of menstrual period (women)
+☐ Decreased exercise performance
+☐ Very low energy despite adequate sleep
+
+**Behavioral Signs:**
+☐ Obsessive thoughts about food
+☐ Binge eating episodes
+☐ Extreme irritability or mood swings
+
+**What To Do:**
+If you're experiencing several of these symptoms:
+1. Track your food for 3-5 days (honestly)
+2. Calculate your actual calorie intake
+3. Gradually increase calories if below minimum
+4. Consult your healthcare provider
+5. Consider working with a registered dietitian
+
+**Remember:** The goal is sustainable, healthy weight loss—not the fastest weight loss at any cost.`
+    }
+  ];
+
+  return (
+    <div className="min-h-screen" style={{ backgroundColor: '#f9fbfd' }}>
+      {/* Achievement Popup */}
+      {showAchievement && (
+        <div className="fixed top-20 right-4 z-50 animate-bounce">
+          <div className="bg-white rounded-xl shadow-2xl p-6 border-2 border-amber-400 max-w-sm">
+            <div className="text-center">
+              <div className="text-6xl mb-2">{showAchievement.icon}</div>
+              <h3 className="text-xl font-bold mb-1" style={{ color: '#12263f' }}>Achievement Unlocked!</h3>
+              <p className="font-semibold" style={{ color: '#2c7be5' }}>{showAchievement.name}</p>
+              <p className="text-sm" style={{ color: '#6e84a3' }}>{showAchievement.description}</p>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Medical Disclaimer Banner */}
+      {!userProfile.disclaimerAccepted && (
+        <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-b-4 border-amber-400 shadow-lg">
+          <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div className="flex items-start gap-4">
+              <div className="text-5xl">⚠️</div>
+              <div className="flex-1">
+                <h3 className="text-xl font-bold mb-2" style={{ color: '#12263f' }}>Important Medical Disclaimer</h3>
+                <p className="text-sm mb-4" style={{ color: '#3e4b5b' }}>
+                  This tool provides dietary guidance and is <strong>NOT medical advice</strong>.
+                  This calculator is <strong>NOT safe for individuals with kidney disease</strong>.
+                  Always consult your healthcare provider before making significant dietary changes.
+                </p>
+                <button
+                  onClick={() => setUserProfile({...userProfile, disclaimerAccepted: true})}
+                  className="px-6 py-3 rounded-lg font-semibold text-white shadow-md transition-all duration-200 hover:shadow-lg transform hover:scale-105"
+                  style={{ background: 'linear-gradient(135deg, #f6c343 0%, #f97316 100%)' }}
+                >
+                  I Understand & Accept
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Kidney Disease Screening */}
+      {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === null && (
+        <div className="min-h-screen flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full" style={{ borderTop: '4px solid #e63757' }}>
+            <div className="text-center mb-6">
+              <div className="text-7xl mb-4">🏥</div>
+              <h2 className="text-3xl font-bold mb-2" style={{ color: '#12263f' }}>Health Screening Required</h2>
+              <p style={{ color: '#6e84a3' }}>We need to ensure this tool is safe for you</p>
+            </div>
+
+            <div className="bg-red-50 rounded-lg p-6 mb-8" style={{ borderLeft: '4px solid #e63757' }}>
+              <p className="font-semibold mb-3" style={{ color: '#12263f', fontSize: '1.1rem' }}>
+                Do you have kidney disease or any condition affecting kidney function?
+              </p>
+              <p className="text-sm" style={{ color: '#6e84a3' }}>
+                High protein intake can be dangerous for individuals with kidney disease. This tool should not be used if you have any kidney-related conditions.
+              </p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <button
+                onClick={() => {
+                  alert('This tool is not safe for use with kidney disease. Please consult your healthcare provider for personalized nutrition guidance.');
+                  window.location.href = 'https://kidney.org';
+                }}
+                className="py-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-105"
+                style={{ backgroundColor: '#e63757' }}
+              >
+                Yes, I have kidney disease
+              </button>
+              <button
+                onClick={() => setUserProfile({...userProfile, hasKidneyDisease: false})}
+                className="py-4 rounded-xl font-semibold text-white shadow-lg transition-all duration-200 hover:shadow-xl transform hover:scale-105"
+                style={{ backgroundColor: '#059669' }}
+              >
+                No, Continue
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Main App Content */}
+      {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === false && (
+        <>
+          {/* Header */}
+          <header className="shadow-lg" style={{ background: 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)' }}>
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 flex items-center gap-3">
+                    💪 GLP-1 Muscle Rescue
+                  </h1>
+                  <p className="text-blue-50 text-lg">
+                    Science-based protein tracking to preserve muscle during weight loss
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  {currentStreak > 0 && userProfile.profileComplete && (
+                    <div className="bg-white/20 backdrop-blur-sm text-white px-4 py-2 rounded-xl border-2 border-white/30">
+                      <div className="text-xs font-bold uppercase">Streak</div>
+                      <div className="text-xl font-bold">🔥 {currentStreak} days</div>
+                    </div>
+                  )}
+                  {trialDaysRemaining > 0 && (
+                    <div className="bg-white/20 backdrop-blur-sm text-white px-6 py-3 rounded-xl border-2 border-white/30 shadow-lg">
+                      <div className="text-xs font-bold uppercase tracking-wider mb-1">Free Trial</div>
+                      <div className="text-2xl font-bold">{trialDaysRemaining} days left</div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </header>
+
+          {/* Navigation Tabs */}
+          {userProfile.profileComplete && (
+            <div className="bg-white border-b-2" style={{ borderColor: '#edf2f9' }}>
+              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                <div className="flex gap-1">
+                  <button
+                    onClick={() => setCurrentView('track')}
+                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
+                      currentView === 'track' ? 'border-current' : 'border-transparent'
+                    }`}
+                    style={{ color: currentView === 'track' ? '#2c7be5' : '#6e84a3' }}
+                  >
+                    📊 Track
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('history')}
+                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
+                      currentView === 'history' ? 'border-current' : 'border-transparent'
+                    }`}
+                    style={{ color: currentView === 'history' ? '#2c7be5' : '#6e84a3' }}
+                  >
+                    📈 History
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('learn')}
+                    className={`px-6 py-4 font-semibold transition-all duration-200 border-b-4 ${
+                      currentView === 'learn' ? 'border-current' : 'border-transparent'
+                    }`}
+                    style={{ color: currentView === 'learn' ? '#2c7be5' : '#6e84a3' }}
+                  >
+                    📚 Learn
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Profile Setup */}
+          {!userProfile.profileComplete && (
+            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+              <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12" style={{ borderTop: '4px solid #2c7be5' }}>
+                <div className="text-center mb-10">
+                  <div className="text-6xl mb-4">📋</div>
+                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Set Up Your Profile</h2>
+                  <p className="text-lg" style={{ color: '#6e84a3' }}>We'll calculate your personalized protein targets using clinical formulas</p>
+                </div>
+
+                <div className="space-y-6">
+                  {/* Age & Gender Row */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                      <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
+                        Age <span className="text-red-500">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={userProfile.age}
+                        onChange={(e) => setUserProfile({...userProfile, age: e.target.value})}
+                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                        style={{
+                          borderColor: '#d2ddec',
+                          '--tw-ring-color': '#2c7be5',
+                          '--tw-ring-opacity': '0.2'
+                        }}
+                        placeholder="e.g., 45"
+                        min="18"
+                        max="100"
+                      />
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
+                        Gender <span className="text-red-500">*</span>
+                      </label>
+                      <select
+                        value={userProfile.gender}
+                        onChange={(e) => setUserProfile({...userProfile, gender: e.target.value})}
+                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                        style={{
+                          borderColor: '#d2ddec',
+                          '--tw-ring-color': '#2c7be5',
+                          '--tw-ring-opacity': '0.2'
+                        }}
+                      >
+                        <option value="">Select...</option>
+                        <option value="female">Female</option>
+                        <option value="male">Male</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Height */}
+                  <div>
+                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
+                      Height <span className="text-red-500">*</span>
+                    </label>
+                    <div className="grid grid-cols-2 gap-4">
+                      <input
+                        type="number"
+                        value={userProfile.heightFeet}
+                        onChange={(e) => setUserProfile({...userProfile, heightFeet: e.target.value})}
+                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                        style={{
+                          borderColor: '#d2ddec',
+                          '--tw-ring-color': '#2c7be5',
+                          '--tw-ring-opacity': '0.2'
+                        }}
+                        placeholder="Feet"
+                        min="4"
+                        max="7"
+                      />
+                      <input
+                        type="number"
+                        value={userProfile.heightInches}
+                        onChange={(e) => setUserProfile({...userProfile, heightInches: e.target.value})}
+                        className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                        style={{
+                          borderColor: '#d2ddec',
+                          '--tw-ring-color': '#2c7be5',
+                          '--tw-ring-opacity': '0.2'
+                        }}
+                        placeholder="Inches"
+                        min="0"
+                        max="11"
+                      />
+                    </div>
+                  </div>
+
+                  {/* Weight */}
+                  <div>
+                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
+                      Current Weight (lbs) <span className="text-red-500">*</span>
+                    </label>
+                    <input
+                      type="number"
+                      value={userProfile.weightLbs}
+                      onChange={(e) => setUserProfile({...userProfile, weightLbs: e.target.value})}
+                      className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                      style={{
+                        borderColor: '#d2ddec',
+                        '--tw-ring-color': '#2c7be5',
+                        '--tw-ring-opacity': '0.2'
+                      }}
+                      placeholder="e.g., 200"
+                      min="50"
+                      max="800"
+                    />
+                  </div>
+
+                  {/* Medication */}
+                  <div>
+                    <label className="block text-sm font-bold mb-2" style={{ color: '#12263f' }}>
+                      GLP-1 Medication <span className="text-red-500">*</span>
+                    </label>
+                    <select
+                      value={userProfile.medication}
+                      onChange={(e) => setUserProfile({...userProfile, medication: e.target.value})}
+                      className="w-full px-4 py-4 rounded-xl border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                      style={{
+                        borderColor: '#d2ddec',
+                        '--tw-ring-color': '#2c7be5',
+                        '--tw-ring-opacity': '0.2'
+                      }}
+                    >
+                      <option value="">Select your medication...</option>
+                      <option value="Ozempic">💉 Ozempic (semaglutide)</option>
+                      <option value="Wegovy">💉 Wegovy (semaglutide)</option>
+                      <option value="Mounjaro">💉 Mounjaro (tirzepatide)</option>
+                      <option value="Zepbound">💉 Zepbound (tirzepatide)</option>
+                      <option value="Rybelsus">💊 Rybelsus (oral semaglutide)</option>
+                      <option value="Trulicity">💉 Trulicity (dulaglutide)</option>
+                      <option value="Victoza">💉 Victoza/Saxenda (liraglutide)</option>
+                      <option value="Compounded">🧪 Compounded GLP-1</option>
+                    </select>
+                  </div>
+
+                  {/* Submit Button */}
+                  <button
+                    onClick={handleCalculateTargets}
+                    disabled={!isProfileValid()}
+                    className={`w-full py-5 rounded-xl font-bold text-lg shadow-lg transition-all duration-200 transform ${
+                      isProfileValid()
+                        ? 'text-white hover:shadow-xl hover:scale-105'
+                        : 'cursor-not-allowed opacity-50'
+                    }`}
+                    style={{
+                      background: isProfileValid()
+                        ? 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)'
+                        : '#d2ddec',
+                      color: isProfileValid() ? '#ffffff' : '#6e84a3'
+                    }}
+                  >
+                    🎯 Calculate My Protein Targets
+                  </button>
+                </div>
+
+                {/* Calorie Guidance After Calculation */}
+                {abwData.calorieGuidance.minimum > 0 && (
+                  <div className="mt-8 p-6 rounded-xl" style={{ background: 'linear-gradient(135deg, #fff5f5 0%, #fffbeb 100%)', borderLeft: '4px solid #f6c343' }}>
+                    <h3 className="font-bold text-lg mb-3 flex items-center gap-2" style={{ color: '#12263f' }}>
+                      ⚠️ Important: Energy Requirements
+                    </h3>
+                    <p className="mb-3" style={{ color: '#3e4b5b' }}>
+                      Your protein targets have been calculated! But remember: <strong>protein alone won't protect your muscles if you're not eating enough total calories.</strong>
+                    </p>
+                    <div className="bg-white p-4 rounded-lg mb-3">
+                      <p className="font-semibold mb-2" style={{ color: '#12263f' }}>Your Minimum Calorie Needs:</p>
+                      <p className="text-2xl font-bold" style={{ color: '#2c7be5' }}>
+                        At least {abwData.calorieGuidance.minimum} calories/day
+                      </p>
+                      <p className="text-sm mt-2" style={{ color: '#6e84a3' }}>
+                        Estimated needs: ~{abwData.calorieGuidance.estimated} calories/day (varies with activity)
+                      </p>
+                    </div>
+                    <p className="text-sm" style={{ color: '#3e4b5b' }}>
+                      When you undereat, your body burns protein for energy instead of using it to maintain muscle. Learn more in the <strong>Education</strong> section.
+                    </p>
+                  </div>
+                )}
+              </div>
+            </div>
+          )}
+
+          {/* TRACK VIEW */}
+          {currentView === 'track' && userProfile.profileComplete && abwData.proteinTargets.minimum > 0 && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+              {/* Calorie Reminder */}
+              <div className="bg-amber-50 border-2 rounded-xl p-4" style={{ borderColor: '#fde68a' }}>
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">💡</div>
+                  <div className="flex-1">
+                    <p className="font-semibold" style={{ color: '#12263f' }}>
+                      Daily Reminder: Don't forget your minimum calories!
+                    </p>
+                    <p className="text-sm" style={{ color: '#6e84a3' }}>
+                      {userProfile.gender === 'female' ? 'Women' : 'Men'}: At least {abwData.calorieGuidance.minimum} calories/day. Undereating causes muscle loss even with adequate protein.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Protein Targets Card */}
+              <div className="bg-white rounded-2xl shadow-xl p-8" style={{ borderTop: '4px solid #059669' }}>
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+                  <div>
+                    <h2 className="text-3xl font-bold mb-2" style={{ color: '#12263f' }}>Your Daily Protein Targets</h2>
+                    <p style={{ color: '#6e84a3' }}>
+                      Based on Adjusted Body Weight (ABW): <strong>{abwData.abwKg} kg</strong> | BMI: <strong>{abwData.bmi}</strong>
+                    </p>
+                  </div>
+                  <button
+                    onClick={handleEditProfile}
+                    className="px-4 py-2 rounded-lg font-semibold text-sm transition-all duration-200 hover:shadow-md"
+                    style={{ color: '#2c7be5', backgroundColor: '#edf2f9' }}
+                  >
+                    ✏️ Edit Profile
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fff5f5', borderColor: '#feb2b2' }}>
+                    <div className="text-4xl mb-3">🎯</div>
+                    <div className="text-sm font-bold mb-2" style={{ color: '#e63757' }}>MINIMUM</div>
+                    <div className="text-5xl font-bold mb-2" style={{ color: '#e63757' }}>{abwData.proteinTargets.minimum}g</div>
+                    <div className="text-xs mb-2" style={{ color: '#e63757' }}>1.2 g/kg ABW</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Essential for muscle preservation</div>
+                  </div>
+
+                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
+                    <div className="text-4xl mb-3">⭐</div>
+                    <div className="text-sm font-bold mb-2" style={{ color: '#f6c343' }}>TARGET</div>
+                    <div className="text-5xl font-bold mb-2" style={{ color: '#f6c343' }}>{abwData.proteinTargets.target}g</div>
+                    <div className="text-xs mb-2" style={{ color: '#f6c343' }}>1.4 g/kg ABW</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Better muscle protection</div>
+                  </div>
+
+                  <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac' }}>
+                    <div className="text-4xl mb-3">🏆</div>
+                    <div className="text-sm font-bold mb-2" style={{ color: '#059669' }}>HIGHER PROTEIN</div>
+                    <div className="text-5xl font-bold mb-2" style={{ color: '#059669' }}>{abwData.proteinTargets.higher}g</div>
+                    <div className="text-xs mb-2" style={{ color: '#059669' }}>1.6 g/kg ABW</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Enhanced preservation</div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Daily Progress Card */}
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+                  <h2 className="text-3xl font-bold" style={{ color: '#12263f' }}>Today's Progress</h2>
+                  <button
+                    onClick={handleResetDay}
+                    className="px-4 py-2 rounded-lg text-sm font-semibold transition-all duration-200"
+                    style={{ color: '#e63757', backgroundColor: '#fff5f5' }}
+                  >
+                    🔄 Reset Day
+                  </button>
+                </div>
+
+                {/* Status Display */}
+                <div className={`p-8 rounded-2xl mb-8 border-2 transition-all duration-300`} style={{
+                  backgroundColor: statusColor === 'red' ? '#fff5f5' :
+                                  statusColor === 'yellow' ? '#fffbeb' :
+                                  statusColor === 'green' ? '#f0fdf4' :
+                                  statusColor === 'gold' ? '#fef3c7' : '#f9fbfd',
+                  borderColor: statusColor === 'red' ? '#feb2b2' :
+                               statusColor === 'yellow' ? '#fde68a' :
+                               statusColor === 'green' ? '#86efac' :
+                               statusColor === 'gold' ? '#fde047' : '#d2ddec'
+                }}>
+                  <div className="text-center">
+                    <div className="text-7xl font-bold mb-3" style={{
+                      color: statusColor === 'red' ? '#e63757' :
+                             statusColor === 'yellow' ? '#f6c343' :
+                             statusColor === 'green' ? '#059669' :
+                             statusColor === 'gold' ? '#f59e0b' : '#6e84a3'
+                    }}>{dailyProtein}g</div>
+                    <div className="text-xl font-semibold mb-4" style={{ color: '#12263f' }}>{currentStatus}</div>
+                    <div className="rounded-full h-8 overflow-hidden" style={{ backgroundColor: '#edf2f9' }}>
+                      <div
+                        className="h-8 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`,
+                          background: statusColor === 'red' ? 'linear-gradient(90deg, #e63757 0%, #f97316 100%)' :
+                                     statusColor === 'yellow' ? 'linear-gradient(90deg, #f6c343 0%, #f59e0b 100%)' :
+                                     statusColor === 'green' ? 'linear-gradient(90deg, #059669 0%, #10b981 100%)' :
+                                     statusColor === 'gold' ? 'linear-gradient(90deg, #f59e0b 0%, #eab308 100%)' :
+                                     'linear-gradient(90deg, #6e84a3 0%, #95a5ba 100%)'
+                        }}
+                      />
+                    </div>
+                    <div className="flex justify-between text-sm mt-3" style={{ color: '#6e84a3' }}>
+                      <span>0g</span>
+                      <span className="font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum</span>
+                      <span>{abwData.proteinTargets.higher}g</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Category Tabs */}
+                <div className="flex gap-2 mb-6 overflow-x-auto pb-2">
+                  {Object.keys(proteinFoods).map((category) => (
+                    <button
+                      key={category}
+                      onClick={() => setActiveCategory(category)}
+                      className={`px-6 py-3 rounded-lg font-semibold whitespace-nowrap transition-all duration-200`}
+                      style={{
+                        backgroundColor: activeCategory === category ? '#2c7be5' : '#edf2f9',
+                        color: activeCategory === category ? '#ffffff' : '#3e4b5b',
+                        boxShadow: activeCategory === category ? '0 4px 6px rgba(44, 123, 229, 0.3)' : 'none'
+                      }}
+                    >
+                      {formatCategoryName(category)}
+                    </button>
+                  ))}
+                </div>
+
+                {/* Quick Add Buttons */}
+                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                  {proteinFoods[activeCategory].map((food) => (
+                    <button
+                      key={food.name}
+                      onClick={() => quickAddProtein(food.name, food.grams)}
+                      className="p-4 rounded-xl text-center transition-all duration-200 transform hover:scale-105 hover:shadow-lg border-2"
+                      style={{
+                        background: 'linear-gradient(135deg, #edf2f9 0%, #d2e6ff 100%)',
+                        borderColor: '#d2ddec'
+                      }}
+                    >
+                      <div className="text-4xl mb-2">{food.icon}</div>
+                      <div className="text-xs font-bold mb-1" style={{ color: '#12263f' }}>{food.name}</div>
+                      <div className="text-xl font-bold" style={{ color: '#2c7be5' }}>+{food.grams}g</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom Add */}
+                <div className="p-6 rounded-xl border-2 border-dashed" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
+                  <h3 className="font-bold mb-4" style={{ color: '#12263f' }}>Add Custom Entry</h3>
+                  <div className="flex gap-3 flex-wrap">
+                    <input
+                      type="text"
+                      value={customFood}
+                      onChange={(e) => setCustomFood(e.target.value)}
+                      placeholder="Food name (optional)"
+                      className="flex-1 min-w-[150px] px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                      style={{
+                        borderColor: '#d2ddec',
+                        '--tw-ring-color': '#2c7be5',
+                        '--tw-ring-opacity': '0.2'
+                      }}
+                    />
+                    <input
+                      type="number"
+                      value={customAmount}
+                      onChange={(e) => setCustomAmount(e.target.value)}
+                      placeholder="Protein (g)"
+                      className="w-32 px-4 py-3 rounded-lg border-2 transition-all duration-200 focus:outline-none focus:ring-4"
+                      style={{
+                        borderColor: '#d2ddec',
+                        '--tw-ring-color': '#2c7be5',
+                        '--tw-ring-opacity': '0.2'
+                      }}
+                    />
+                    <button
+                      onClick={handleAddCustom}
+                      disabled={!customAmount || parseInt(customAmount) <= 0}
+                      className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${
+                        customAmount && parseInt(customAmount) > 0 ? 'hover:shadow-lg transform hover:scale-105' : ''
+                      }`}
+                      style={{
+                        background: customAmount && parseInt(customAmount) > 0
+                          ? 'linear-gradient(135deg, #2c7be5 0%, #059669 100%)'
+                          : '#d2ddec',
+                        color: customAmount && parseInt(customAmount) > 0 ? '#ffffff' : '#6e84a3',
+                        cursor: customAmount && parseInt(customAmount) > 0 ? 'pointer' : 'not-allowed'
+                      }}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+
+                {/* Today's Log */}
+                {proteinLog.length > 0 && (
+                  <div className="mt-8">
+                    <h3 className="font-bold mb-4 text-lg" style={{ color: '#12263f' }}>
+                      Today's Log <span className="text-sm font-normal" style={{ color: '#6e84a3' }}>({proteinLog.length} entries)</span>
+                    </h3>
+                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                      {proteinLog.map((entry, index) => (
+                        <div key={index} className="flex justify-between items-center px-4 py-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
+                          <div className="flex items-center gap-3">
+                            <span className="font-bold text-xs px-3 py-1 rounded-full text-white" style={{ backgroundColor: '#2c7be5' }}>#{index + 1}</span>
+                            <span className="font-semibold" style={{ color: '#12263f' }}>{entry.food}</span>
+                          </div>
+                          <div className="text-right">
+                            <span className="font-bold text-xl mr-2" style={{ color: '#2c7be5' }}>{entry.grams}g</span>
+                            <span className="text-xs" style={{ color: '#6e84a3' }}>{entry.time}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Insights Card */}
+              <div className="rounded-2xl shadow-xl p-8 border-2" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderColor: '#93c5fd' }}>
+                <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#12263f' }}>
+                  💡 Muscle Preservation Analysis
+                </h2>
+                <div className="space-y-4">
+                  <div className="bg-white p-5 rounded-xl border-2" style={{ borderColor: '#d2ddec' }}>
+                    <p style={{ color: '#3e4b5b' }}>
+                      <strong style={{ color: '#12263f' }}>Current Adequacy:</strong> {Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum target
+                    </p>
+                  </div>
+
+                  {dailyProtein < abwData.proteinTargets.minimum && (
+                    <div className="bg-red-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #e63757' }}>
+                      <p className="font-bold mb-2" style={{ color: '#e63757', fontSize: '1.1rem' }}>⚠️ Action Required</p>
+                      <p style={{ color: '#3e4b5b' }}>
+                        You need <strong style={{ color: '#e63757' }}>{abwData.proteinTargets.minimum - dailyProtein}g more protein</strong> today to meet your minimum target and protect muscle mass.
+                      </p>
+                    </div>
+                  )}
+
+                  {dailyProtein >= abwData.proteinTargets.minimum && dailyProtein < abwData.proteinTargets.higher && (
+                    <div className="bg-green-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #059669' }}>
+                      <p className="font-bold mb-2" style={{ color: '#059669', fontSize: '1.1rem' }}>✅ Good Progress!</p>
+                      <p style={{ color: '#3e4b5b' }}>
+                        You're meeting your minimum. Add <strong style={{ color: '#059669' }}>{abwData.proteinTargets.higher - dailyProtein}g more</strong> to reach higher protein target.
+                      </p>
+                    </div>
+                  )}
+
+                  {dailyProtein >= abwData.proteinTargets.higher && (
+                    <div className="bg-amber-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #f6c343' }}>
+                      <p className="font-bold mb-2" style={{ color: '#f6c343', fontSize: '1.1rem' }}>🏆 Excellent Work!</p>
+                      <p style={{ color: '#3e4b5b' }}>
+                        You've reached your higher protein target. Your muscles are well-protected during weight loss!
+                      </p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* HISTORY VIEW */}
+          {currentView === 'history' && userProfile.profileComplete && (
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+              {/* Stats Overview */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <div className="text-4xl mb-2">🔥</div>
+                  <div className="text-3xl font-bold" style={{ color: '#2c7be5' }}>{currentStreak}</div>
+                  <div className="text-sm" style={{ color: '#6e84a3' }}>Current Streak</div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <div className="text-4xl mb-2">🏆</div>
+                  <div className="text-3xl font-bold" style={{ color: '#f6c343' }}>{longestStreak}</div>
+                  <div className="text-sm" style={{ color: '#6e84a3' }}>Longest Streak</div>
+                </div>
+                <div className="bg-white p-6 rounded-xl shadow-lg">
+                  <div className="text-4xl mb-2">📊</div>
+                  <div className="text-3xl font-bold" style={{ color: '#059669' }}>{getAchievementRate()}%</div>
+                  <div className="text-sm" style={{ color: '#6e84a3' }}>Success Rate (30 days)</div>
+                </div>
+              </div>
+
+              {/* Achievement Badges */}
+              {achievements.length > 0 && (
+                <div className="bg-white rounded-2xl shadow-xl p-8">
+                  <h2 className="text-2xl font-bold mb-6" style={{ color: '#12263f' }}>🏅 Your Achievements</h2>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    {achievements.map(achievement => (
+                      <div key={achievement.id} className="text-center p-4 rounded-xl border-2" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
+                        <div className="text-5xl mb-2">{achievement.icon}</div>
+                        <div className="font-bold text-sm" style={{ color: '#12263f' }}>{achievement.name}</div>
+                        <div className="text-xs" style={{ color: '#6e84a3' }}>{achievement.description}</div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Line Chart */}
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#12263f' }}>📈 30-Day Protein Intake</h2>
+                <div className="relative h-64">
+                  <svg className="w-full h-full" viewBox="0 0 800 250">
+                    {/* Grid lines */}
+                    <line x1="50" y1="10" x2="50" y2="210" stroke="#d2ddec" strokeWidth="2"/>
+                    <line x1="50" y1="210" x2="780" y2="210" stroke="#d2ddec" strokeWidth="2"/>
+
+                    {/* Target line */}
+                    <line
+                      x1="50"
+                      y1={210 - ((abwData.proteinTargets.minimum / (abwData.proteinTargets.higher + 20)) * 200)}
+                      x2="780"
+                      y2={210 - ((abwData.proteinTargets.minimum / (abwData.proteinTargets.higher + 20)) * 200)}
+                      stroke="#e63757"
+                      strokeWidth="2"
+                      strokeDasharray="5,5"
+                    />
+
+                    {/* Data line */}
+                    <polyline
+                      fill="none"
+                      stroke="#2c7be5"
+                      strokeWidth="3"
+                      points={getHistoricalData(30).map((d, i) => {
+                        const x = 50 + (i * (730 / 30));
+                        const y = 210 - ((d.protein / (abwData.proteinTargets.higher + 20)) * 200);
+                        return `${x},${y}`;
+                      }).join(' ')}
+                    />
+
+                    {/* Data points */}
+                    {getHistoricalData(30).map((d, i) => {
+                      const x = 50 + (i * (730 / 30));
+                      const y = 210 - ((d.protein / (abwData.proteinTargets.higher + 20)) * 200);
+                      return (
+                        <circle
+                          key={i}
+                          cx={x}
+                          cy={y}
+                          r="4"
+                          fill={d.metTarget ? '#059669' : '#e63757'}
+                        />
+                      );
+                    })}
+                  </svg>
+                </div>
+                <div className="flex justify-center gap-6 mt-4">
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#059669' }}></div>
+                    <span className="text-sm" style={{ color: '#6e84a3' }}>Met Target</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <div className="w-4 h-4 rounded-full" style={{ backgroundColor: '#e63757' }}></div>
+                    <span className="text-sm" style={{ color: '#6e84a3' }}>Below Target</span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Calendar View */}
+              <div className="bg-white rounded-2xl shadow-xl p-8">
+                <h2 className="text-2xl font-bold mb-6" style={{ color: '#12263f' }}>📅 30-Day Calendar</h2>
+                <div className="grid grid-cols-7 gap-2">
+                  {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
+                    <div key={day} className="text-center font-bold text-sm py-2" style={{ color: '#6e84a3' }}>
+                      {day}
+                    </div>
+                  ))}
+                  {(() => {
+                    const data = getHistoricalData(30);
+                    const firstDate = new Date(data[0].date);
+                    const firstDay = firstDate.getDay();
+                    const cells = [];
+
+                    // Empty cells for days before first date
+                    for (let i = 0; i < firstDay; i++) {
+                      cells.push(<div key={`empty-${i}`} className="aspect-square"></div>);
+                    }
+
+                    // Calendar cells
+                    data.forEach((d, i) => {
+                      const date = new Date(d.date);
+                      cells.push(
+                        <div
+                          key={i}
+                          className="aspect-square p-2 rounded-lg text-center border-2"
+                          style={{
+                            backgroundColor: d.protein === 0 ? '#f9fbfd' :
+                                          d.metTarget ? '#f0fdf4' : '#fff5f5',
+                            borderColor: d.protein === 0 ? '#d2ddec' :
+                                       d.metTarget ? '#86efac' : '#feb2b2'
+                          }}
+                        >
+                          <div className="text-xs font-bold" style={{ color: '#12263f' }}>
+                            {date.getDate()}
+                          </div>
+                          {d.protein > 0 && (
+                            <div className="text-xs font-semibold" style={{
+                              color: d.metTarget ? '#059669' : '#e63757'
+                            }}>
+                              {d.protein}g
+                            </div>
+                          )}
+                        </div>
+                      );
+                    });
+
+                    return cells;
+                  })()}
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* LEARN VIEW */}
+          {currentView === 'learn' && userProfile.profileComplete && (
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
+              <div className="text-center mb-8">
+                <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>📚 Education Center</h2>
+                <p className="text-lg" style={{ color: '#6e84a3' }}>
+                  Evidence-based information to help you preserve muscle during GLP-1 weight loss
+                </p>
+              </div>
+
+              {educationContent.map((section, index) => (
+                <details key={section.id} className="bg-white rounded-xl shadow-lg overflow-hidden" open={index === 0}>
+                  <summary className="px-8 py-6 cursor-pointer hover:bg-gray-50 transition-all duration-200 flex items-center gap-4">
+                    <div className="text-4xl">{section.icon}</div>
+                    <h3 className="text-2xl font-bold flex-1" style={{ color: '#12263f' }}>{section.title}</h3>
+                    <div className="text-2xl" style={{ color: '#6e84a3' }}>▼</div>
+                  </summary>
+                  <div className="px-8 py-6 border-t-2" style={{ borderColor: '#edf2f9' }}>
+                    <div className="prose max-w-none" style={{ color: '#3e4b5b' }}>
+                      {section.content.split('\n\n').map((paragraph, i) => {
+                        if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
+                          return <h4 key={i} className="font-bold text-lg mt-4 mb-2" style={{ color: '#12263f' }}>{paragraph.replace(/\*\*/g, '')}</h4>;
+                        }
+                        if (paragraph.startsWith('☐')) {
+                          return (
+                            <div key={i} className="flex items-start gap-2 mb-2">
+                              <input type="checkbox" className="mt-1" />
+                              <span>{paragraph.substring(2)}</span>
+                            </div>
+                          );
+                        }
+                        return <p key={i} className="mb-4 whitespace-pre-line">{paragraph}</p>;
+                      })}
+                    </div>
+                  </div>
+                </details>
+              ))}
+            </div>
+          )}
+
+          {/* Paywall Modal */}
+          {showPaywall && (
+            <div className="fixed inset-0 flex items-center justify-center p-4 z-50" style={{ backgroundColor: 'rgba(0, 0, 0, 0.7)', backdropFilter: 'blur(8px)' }}>
+              <div className="bg-white rounded-2xl p-10 max-w-md shadow-2xl" style={{ borderTop: '4px solid #2c7be5' }}>
+                <div className="text-center mb-8">
+                  <div className="text-7xl mb-4">💪</div>
+                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Continue Your Journey</h2>
+                  <p className="text-lg" style={{ color: '#6e84a3' }}>Your 7-day trial has ended. Subscribe to keep protecting your muscle mass!</p>
+                </div>
+                <div className="space-y-4">
+                  <button
+                    onClick={() => window.location.href = 'https://buy.stripe.com/your-link'}
+                    className="w-full py-5 rounded-xl font-bold text-lg text-white shadow-xl transition-all duration-200 transform hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #059669 0%, #10b981 100%)' }}
+                  >
+                    Monthly Plan - $17/mo
+                  </button>
+                  <button
+                    onClick={() => window.location.href = 'https://buy.stripe.com/your-lifetime-link'}
+                    className="w-full py-5 rounded-xl font-bold text-lg text-white shadow-xl transition-all duration-200 transform hover:scale-105"
+                    style={{ background: 'linear-gradient(135deg, #2c7be5 0%, #7c3aed 100%)' }}
+                  >
+                    Lifetime Access - $97
+                    <span className="block text-sm font-normal opacity-90">Save 76% • Best Value!</span>
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Footer */}
+          <footer className="mt-16 py-10" style={{ backgroundColor: '#12263f' }}>
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+              <p className="text-sm mb-3" style={{ color: '#95a5ba' }}>
+                ⚠️ This tool is not medical advice. Not for use with kidney disease.
+                Consult your healthcare provider before making dietary changes.
+              </p>
+              <p className="text-xs" style={{ color: '#6e84a3' }}>
+                © 2024 GLP-1 Muscle Rescue Protocol | Created by Dan, RD
+              </p>
+            </div>
+          </footer>
+        </>
+      )}
+    </div>
+  );
+}
+
+export default App;
