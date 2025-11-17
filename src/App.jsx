@@ -313,6 +313,61 @@ function App() {
   };
 
   /**
+   * Export data to JSON
+   */
+  const exportToJSON = () => {
+    const exportData = {
+      profile: {
+        gender: userProfile.gender,
+        heightFeet: userProfile.heightFeet,
+        heightInches: userProfile.heightInches,
+        weight: userProfile.weight,
+        medication: userProfile.medication
+      },
+      proteinTargets: abwData.proteinTargets,
+      currentStreak,
+      longestStreak,
+      proteinHistory,
+      achievements,
+      exportDate: new Date().toISOString()
+    };
+
+    const dataStr = JSON.stringify(exportData, null, 2);
+    const dataBlob = new Blob([dataStr], { type: 'application/json' });
+    const url = URL.createObjectURL(dataBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `glp1-protein-tracker-${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  /**
+   * Export data to CSV
+   */
+  const exportToCSV = () => {
+    let csv = 'Date,Protein (g),Target Met,Foods Logged\n';
+
+    Object.entries(proteinHistory).forEach(([date, data]) => {
+      const foods = data.log.map(entry => `${entry.food} (${entry.grams}g)`).join('; ');
+      const targetMet = data.total >= abwData.proteinTargets.minimum ? 'Yes' : 'No';
+      csv += `${date},${data.total},${targetMet},"${foods}"\n`;
+    });
+
+    const csvBlob = new Blob([csv], { type: 'text/csv' });
+    const url = URL.createObjectURL(csvBlob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `glp1-protein-tracker-${new Date().toISOString().split('T')[0]}.csv`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+  };
+
+  /**
    * Edit profile
    */
   const handleEditProfile = () => {
@@ -1132,6 +1187,30 @@ If you're experiencing several of these symptoms:
                   <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Success</div>
                 </div>
               </div>
+
+              {/* Export Data */}
+              {Object.keys(proteinHistory).length > 0 && (
+                <div className="mobile-card">
+                  <h3 className="section-title mb-3">📥 Export Your Data</h3>
+                  <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
+                    Download your tracking history to keep a backup or share with your healthcare provider.
+                  </p>
+                  <div className="grid grid-cols-2 gap-3">
+                    <button
+                      onClick={exportToCSV}
+                      className="btn-mobile btn-outline"
+                    >
+                      📄 Export CSV
+                    </button>
+                    <button
+                      onClick={exportToJSON}
+                      className="btn-mobile btn-outline"
+                    >
+                      📦 Export JSON
+                    </button>
+                  </div>
+                </div>
+              )}
 
               {/* Achievement Badges */}
               {achievements.length > 0 && (
