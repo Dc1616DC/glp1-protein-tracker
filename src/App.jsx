@@ -454,14 +454,20 @@ function App() {
       icon: '💊',
       content: `GLP-1 medications are incredibly effective for weight loss, but they come with a critical challenge: they can lead to significant muscle loss alongside fat loss.
 
-**The Problem:**
+**The Problem You're Facing:**
 - Studies show that 25-40% of weight lost on GLP-1 medications can be lean muscle mass
-- Muscle loss leads to: slower metabolism, decreased strength, increased fall risk, and reduced quality of life
+- Muscle loss leads to: slower metabolism, decreased strength, and difficulty maintaining results long-term
+- **This is why 80-95% of people regain weight**—they lose muscle, not just fat, and can't sustain the changes
+- Without muscle, your metabolism slows, making it nearly impossible to keep weight off after stopping medication
 
-**The Solution:**
-- Adequate protein intake is your primary defense against muscle loss
-- Protein provides the building blocks (amino acids) your body needs to preserve muscle
-- When combined with strength training, proper protein intake can dramatically reduce muscle loss during rapid weight loss`
+**The Solution (Evidence-Based):**
+- Adequate protein intake is your primary defense against muscle loss during rapid weight loss
+- Protein provides the building blocks (amino acids) your body needs to preserve muscle while fat is burned
+- When combined with strength training, proper protein intake can preserve 95%+ of lean mass during weight loss
+- **This is how you break the yo-yo cycle**: Build sustainable habits now while your appetite is suppressed
+
+**Why This App?**
+Your GLP-1 medication helps with appetite, but it doesn't teach healthy behaviors. This app helps you build tracking habits and protein awareness that will serve you for life—not just while you're on medication.`
     },
     {
       id: 'energy-balance',
@@ -544,6 +550,42 @@ If you're experiencing several of these symptoms:
 5. Consider working with a registered dietitian
 
 **Remember:** The goal is sustainable, healthy weight loss—not the fastest weight loss at any cost.`
+    },
+    {
+      id: 'managing-side-effects',
+      title: 'Managing GLP-1 Side Effects with Smart Protein Choices',
+      icon: '🤢',
+      content: `Many GLP-1 users experience nausea, bloating, or GI discomfort—especially in the first weeks. The right protein choices can help you meet your targets while minimizing discomfort.
+
+**If You're Experiencing Nausea:**
+✓ Choose bland, easily digestible proteins: Greek yogurt, eggs, protein shakes, cottage cheese
+✓ Eat smaller, more frequent protein portions throughout the day
+✓ Avoid greasy, fried, or heavily spiced proteins
+✓ Try cold proteins (turkey slices, hard-boiled eggs) which may be more tolerable
+✓ Sip protein shakes slowly over 15-20 minutes
+
+**If You Have No Appetite:**
+✓ Prioritize protein-dense foods first when you DO eat
+✓ Use protein shakes or bars as convenient options
+✓ Focus on quality over quantity—Greek yogurt, cottage cheese pack a lot of protein in small volumes
+✓ Don't force large meals; spread protein across the day
+
+**If You're Constipated:**
+✓ Balance protein with fiber-rich plant-based options (lentils, beans, edamame)
+✓ Stay hydrated—aim for 8+ glasses of water daily
+✓ Include prunes, chia seeds, or psyllium husk
+✓ Don't skip vegetables even when appetite is low
+
+**General Tips:**
+- Eat slowly and mindfully—GLP-1s slow gastric emptying, so rushing meals can cause discomfort
+- Keep protein portions moderate at each meal (20-40g) rather than one huge serving
+- Listen to your body's fullness cues, but track to ensure you're meeting minimums
+- Side effects usually improve after 4-6 weeks as your body adjusts
+
+**When to Call Your Doctor:**
+- Severe, persistent nausea or vomiting that prevents eating
+- Inability to meet minimum calorie needs for several days
+- Severe abdominal pain or persistent GI symptoms`
     }
   ];
 
@@ -570,11 +612,12 @@ If you're experiencing several of these symptoms:
             <div className="flex items-start gap-4">
               <div className="text-5xl">⚠️</div>
               <div className="flex-1">
-                <h3 className="text-xl font-bold mb-2" style={{ color: '#12263f' }}>Important Medical Disclaimer</h3>
-                <p className="text-sm mb-4" style={{ color: '#3e4b5b' }}>
-                  This tool provides dietary guidance and is <strong>NOT medical advice</strong>.
-                  This calculator is <strong>NOT safe for individuals with kidney disease</strong>.
-                  Always consult your healthcare provider before making significant dietary changes.
+                <h3 className="text-xl font-bold mb-2" style={{ color: '#12263f' }}>Welcome! Quick Medical Disclaimer</h3>
+                <p className="text-sm mb-3" style={{ color: '#3e4b5b' }}>
+                  This app provides <strong>educational guidance and behavioral support</strong> for adults on GLP-1 medications. It is <strong>NOT medical advice</strong> and <strong>NOT safe for individuals with kidney disease</strong>. Always consult your healthcare provider before making significant dietary changes.
+                </p>
+                <p className="text-xs mb-4" style={{ color: '#6e84a3' }}>
+                  <strong>Created by a Registered Dietitian</strong> to help you build sustainable habits, preserve muscle mass, and feel confident about nutrition while using GLP-1 medications.
                 </p>
                 <button
                   onClick={() => setUserProfile({...userProfile, disclaimerAccepted: true})}
@@ -640,10 +683,13 @@ If you're experiencing several of these symptoms:
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                 <div>
                   <h1 className="text-4xl md:text-5xl font-bold text-white mb-2 flex items-center gap-3">
-                    💪 GLP-1 Muscle Rescue
+                    💪 GLP-1 Protein Tracker
                   </h1>
                   <p className="text-blue-50 text-lg">
-                    Science-based protein tracking to preserve muscle during weight loss
+                    Build sustainable habits • Preserve muscle • Break the yo-yo cycle
+                  </p>
+                  <p className="text-blue-100 text-sm mt-1">
+                    RD-designed protein tracking for adults on GLP-1 medications
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
@@ -706,9 +752,23 @@ If you're experiencing several of these symptoms:
             <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12" style={{ borderTop: '4px solid #2c7be5' }}>
                 <div className="text-center mb-10">
-                  <div className="text-6xl mb-4">📋</div>
-                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Set Up Your Profile</h2>
-                  <p className="text-lg" style={{ color: '#6e84a3' }}>We'll calculate your personalized protein targets using clinical formulas</p>
+                  <div className="text-6xl mb-4">💪</div>
+                  <h2 className="text-4xl font-bold mb-3" style={{ color: '#12263f' }}>Finally, Support Beyond Just Medication</h2>
+                  <p className="text-lg mb-4" style={{ color: '#6e84a3' }}>
+                    Studies show 25-40% of weight lost on GLP-1s is muscle mass. Let's change that.
+                  </p>
+                  <div className="bg-blue-50 rounded-xl p-6 text-left mb-8" style={{ borderLeft: '4px solid #2c7be5' }}>
+                    <p className="font-semibold mb-2" style={{ color: '#12263f' }}>You're not looking for another diet...</p>
+                    <p className="text-sm" style={{ color: '#6e84a3' }}>
+                      You're tired of the yo-yo cycle. Your GLP-1 medication is helping with appetite, but you need to build sustainable habits that last—proper protein, healthy behaviors, and a saner relationship with food.
+                    </p>
+                    <p className="text-sm mt-3 font-semibold" style={{ color: '#2c7be5' }}>
+                      ✓ Science-backed by Registered Dietitian<br/>
+                      ✓ Build habits to maintain your results<br/>
+                      ✓ Preserve muscle while you lose weight
+                    </p>
+                  </div>
+                  <p className="text-lg font-semibold" style={{ color: '#12263f' }}>Let's calculate your personalized protein targets</p>
                 </div>
 
                 <div className="space-y-6">
@@ -907,7 +967,7 @@ If you're experiencing several of these symptoms:
 
               {/* Protein Targets Card */}
               <div className="bg-white rounded-2xl shadow-xl p-8" style={{ borderTop: '4px solid #059669' }}>
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
+                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-6">
                   <div>
                     <h2 className="text-3xl font-bold mb-2" style={{ color: '#12263f' }}>Your Daily Protein Targets</h2>
                     <p style={{ color: '#6e84a3' }}>
@@ -922,6 +982,11 @@ If you're experiencing several of these symptoms:
                     ✏️ Edit Profile
                   </button>
                 </div>
+                <div className="bg-blue-50 rounded-lg p-4 mb-8" style={{ borderLeft: '4px solid #2c7be5' }}>
+                  <p className="text-sm font-semibold" style={{ color: '#12263f' }}>
+                    💡 Build Habits That Last: These targets help you preserve muscle while your medication helps with appetite. Track daily to build sustainable patterns you can maintain long-term.
+                  </p>
+                </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                   <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fff5f5', borderColor: '#feb2b2' }}>
@@ -929,7 +994,7 @@ If you're experiencing several of these symptoms:
                     <div className="text-sm font-bold mb-2" style={{ color: '#e63757' }}>MINIMUM</div>
                     <div className="text-5xl font-bold mb-2" style={{ color: '#e63757' }}>{abwData.proteinTargets.minimum}g</div>
                     <div className="text-xs mb-2" style={{ color: '#e63757' }}>1.2 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Essential for muscle preservation</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Baseline for protecting muscle mass</div>
                   </div>
 
                   <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#fffbeb', borderColor: '#fde68a' }}>
@@ -937,7 +1002,7 @@ If you're experiencing several of these symptoms:
                     <div className="text-sm font-bold mb-2" style={{ color: '#f6c343' }}>TARGET</div>
                     <div className="text-5xl font-bold mb-2" style={{ color: '#f6c343' }}>{abwData.proteinTargets.target}g</div>
                     <div className="text-xs mb-2" style={{ color: '#f6c343' }}>1.4 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Better muscle protection</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Strong protection, aim for this daily</div>
                   </div>
 
                   <div className="text-center p-6 rounded-xl border-2 transition-all duration-200 hover:shadow-lg" style={{ backgroundColor: '#f0fdf4', borderColor: '#86efac' }}>
@@ -945,7 +1010,7 @@ If you're experiencing several of these symptoms:
                     <div className="text-sm font-bold mb-2" style={{ color: '#059669' }}>HIGHER PROTEIN</div>
                     <div className="text-5xl font-bold mb-2" style={{ color: '#059669' }}>{abwData.proteinTargets.higher}g</div>
                     <div className="text-xs mb-2" style={{ color: '#059669' }}>1.6 g/kg ABW</div>
-                    <div className="text-sm" style={{ color: '#6e84a3' }}>Enhanced preservation</div>
+                    <div className="text-sm" style={{ color: '#6e84a3' }}>Maximum muscle preservation</div>
                   </div>
                 </div>
               </div>
@@ -999,6 +1064,19 @@ If you're experiencing several of these symptoms:
                       <span>0g</span>
                       <span className="font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum</span>
                       <span>{abwData.proteinTargets.higher}g</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Quick Tip Box */}
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 rounded-xl p-4 mb-6" style={{ borderLeft: '4px solid #7c3aed' }}>
+                  <div className="flex items-start gap-3">
+                    <div className="text-2xl">💡</div>
+                    <div className="flex-1">
+                      <p className="text-sm font-semibold mb-1" style={{ color: '#12263f' }}>Feeling nauseous or low appetite?</p>
+                      <p className="text-xs" style={{ color: '#6e84a3' }}>
+                        Try easily digestible options like Greek yogurt, eggs, or protein shakes. Spread protein across smaller portions throughout the day. Check the <strong>Learn tab</strong> for detailed tips on managing GLP-1 side effects.
+                      </p>
                     </div>
                   </div>
                 </div>
