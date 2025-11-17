@@ -1409,53 +1409,6 @@ If you're experiencing several of these symptoms:
                       <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>🧠 Build Habits That Last</h3>
                       <p className="text-sm">Daily tracking and education help you develop patterns you can maintain for life—not just while on medication.</p>
                     </div>
-                    <div className="chase-alert-info">
-                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>📚 Understand Your Body</h3>
-                      <p className="text-sm">Learn to manage side effects, recognize hunger cues, and make informed choices with confidence.</p>
-                    </div>
-                    <div className="chase-alert-info">
-                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>❤️ Compassionate Guidance</h3>
-                      <p className="text-sm">No judgment, no shame—just gentle, professional support for your unique journey.</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Chase Wellness Values */}
-              <div className="chase-card mb-8" style={{ background: 'var(--light-background)' }}>
-                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--dark-text)' }}>Our Core Values</h2>
-                <div className="grid md:grid-cols-2 gap-6">
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
-                      ❤️ Compassion
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
-                      Your journey is unique and worthy of kindness. We meet you where you are, without judgment.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
-                      🔬 Evidence-Based Wisdom
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
-                      Every recommendation is backed by nutrition science and clinical research—no fads, just facts.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
-                      🧘 Body Awareness
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
-                      Learn to listen to your body's signals and honor its needs, even when they change.
-                    </p>
-                  </div>
-                  <div>
-                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
-                      🌱 Understanding Over Willpower
-                    </h3>
-                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
-                      Lasting change comes from insight, not force. We help you understand the "why" behind the "what."
-                    </p>
                   </div>
                 </div>
               </div>
