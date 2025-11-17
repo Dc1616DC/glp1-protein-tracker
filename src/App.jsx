@@ -1,5 +1,9 @@
 import React, { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import './App.css';
+import CircularProgress from './components/CircularProgress';
+import Confetti from './components/Confetti';
+import QuickAddFAB from './components/QuickAddFAB';
 
 // GLP-1 Protein Tracker with ABW Calculations
 // Uses clinically-validated Adjusted Body Weight formulas
@@ -40,6 +44,11 @@ function App() {
 
   // Navigation state
   const [currentView, setCurrentView] = useState('track'); // track, history, learn, why
+
+  // Premium features state
+  const [showConfetti, setShowConfetti] = useState(false);
+  const [showQuickAdd, setShowQuickAdd] = useState(false);
+  const [goalJustReached, setGoalJustReached] = useState(false);
 
   // Daily tracking state
   const [dailyProtein, setDailyProtein] = useState(0);
@@ -248,9 +257,25 @@ function App() {
 
     const newLog = [...proteinLog, newEntry];
     const newTotal = dailyProtein + grams;
+    const previousTotal = dailyProtein;
 
     setProteinLog(newLog);
     setDailyProtein(newTotal);
+
+    // Check if goal just reached - trigger celebration!
+    if (previousTotal < abwData.proteinTargets.minimum && newTotal >= abwData.proteinTargets.minimum) {
+      setShowConfetti(true);
+      setGoalJustReached(true);
+      // Haptic feedback
+      if (navigator.vibrate) {
+        navigator.vibrate([100, 50, 100, 50, 200]);
+      }
+      // Reset confetti after animation
+      setTimeout(() => {
+        setShowConfetti(false);
+        setGoalJustReached(false);
+      }, 3000);
+    }
 
     // Save to localStorage
     const today = new Date().toDateString();
@@ -650,8 +675,14 @@ If you're experiencing several of these symptoms:
     }
   ];
 
+  // Determine theme based on streak
+  const currentTheme = currentStreak >= 30 ? 'gold' : currentStreak >= 7 ? 'purple' : 'teal';
+
   return (
-    <div className="min-h-screen bg-neutral-50">
+    <div className={`min-h-screen bg-neutral-50 theme-${currentTheme}`}>
+      {/* Confetti celebration */}
+      <Confetti play={showConfetti} />
+
       {/* Achievement Popup */}
       {showAchievement && (
         <div className="fixed top-20 right-4 z-50 animate-scale-in">
@@ -976,7 +1007,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Protein Targets */}
-              <div className="mobile-card">
+              <div className="glass-card">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="section-title">Daily Targets</h2>
                   <button
@@ -1017,7 +1048,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Daily Progress */}
-              <div className="mobile-card">
+              <div className="glass-card">
                 <div className="flex justify-between items-center mb-4">
                   <h2 className="section-title">Today's Progress</h2>
                   <button
@@ -1029,43 +1060,30 @@ If you're experiencing several of these symptoms:
                   </button>
                 </div>
 
-                {/* Status Display */}
-                <div className="text-center mb-6">
-                  <div className="text-7xl font-bold mb-3" style={{
-                    color: statusColor === 'red' ? 'var(--error)' :
-                           statusColor === 'yellow' ? 'var(--warning)' :
-                           statusColor === 'green' ? 'var(--success)' :
-                           statusColor === 'gold' ? 'var(--success)' : 'var(--text-secondary)',
-                    lineHeight: '1'
-                  }}>
-                    {dailyProtein}g
-                  </div>
+                {/* Status Display - Circular Progress */}
+                <motion.div
+                  className="flex justify-center mb-6"
+                  key={dailyProtein}
+                  initial={{ scale: 1 }}
+                  animate={{ scale: [1, 1.02, 1] }}
+                  transition={{ duration: 0.3 }}
+                >
+                  <CircularProgress
+                    value={dailyProtein}
+                    goal={abwData.proteinTargets.minimum}
+                    streak={currentStreak}
+                    size={280}
+                  />
+                </motion.div>
 
-                  <div className={`badge mb-4 ${
+                {/* Status Badge */}
+                <div className="text-center mb-6">
+                  <div className={`badge ${
                     statusColor === 'red' ? 'badge-error' :
                     statusColor === 'yellow' ? 'badge-warning' :
                     'badge-success'
                   }`}>
                     {currentStatus}
-                  </div>
-
-                  <div className="progress-bar-wrapper mb-2">
-                    <div
-                      className={`progress-bar-fill ${
-                        statusColor === 'red' ? 'progress-bar-fill-error' :
-                        statusColor === 'yellow' ? 'progress-bar-fill-warning' :
-                        'progress-bar-fill-success'
-                      }`}
-                      style={{
-                        width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`
-                      }}
-                    />
-                  </div>
-
-                  <div className="flex justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
-                    <span>0g</span>
-                    <span className="font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}%</span>
-                    <span>{abwData.proteinTargets.higher}g</span>
                   </div>
                 </div>
 
@@ -1102,7 +1120,7 @@ If you're experiencing several of these symptoms:
                 </div>
 
                 {/* Custom Add */}
-                <div className="mobile-card" style={{ borderStyle: 'dashed' }}>
+                <div className="glass-card" style={{ borderStyle: 'dashed' }}>
                   <h3 className="section-subtitle mb-3">Add Custom Entry</h3>
                   <div className="space-y-2">
                     <input
@@ -1142,7 +1160,7 @@ If you're experiencing several of these symptoms:
 
                 {/* Today's Log */}
                 {proteinLog.length > 0 && (
-                  <div className="mobile-card">
+                  <div className="glass-card">
                     <h3 className="section-title mb-4">
                       Today's Log <span className="text-sm font-normal" style={{ color: 'var(--text-secondary)' }}>({proteinLog.length})</span>
                     </h3>
@@ -1169,6 +1187,14 @@ If you're experiencing several of these symptoms:
             </div>
           )}
 
+          {/* Quick Add FAB - Only show in track view */}
+          {currentView === 'track' && userProfile.profileComplete && (
+            <QuickAddFAB onClick={() => {
+              // Scroll to food selection area
+              window.scrollTo({ top: 400, behavior: 'smooth' });
+            }} />
+          )}
+
           {/* HISTORY VIEW */}
           {currentView === 'history' && userProfile.profileComplete && (
             <div className="main-content">
@@ -1193,7 +1219,7 @@ If you're experiencing several of these symptoms:
 
               {/* Export Data */}
               {Object.keys(JSON.parse(localStorage.getItem('proteinTracking') || '{}')).length > 0 && (
-                <div className="mobile-card">
+                <div className="glass-card">
                   <h3 className="section-title mb-3">📥 Export Your Data</h3>
                   <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
                     Download your tracking history to keep a backup or share with your healthcare provider.
@@ -1217,7 +1243,7 @@ If you're experiencing several of these symptoms:
 
               {/* Achievement Badges */}
               {achievements.length > 0 && (
-                <div className="mobile-card">
+                <div className="glass-card">
                   <h2 className="section-title mb-4">🏅 Achievements</h2>
                   <div className="grid grid-cols-2 gap-3">
                     {achievements.map(achievement => (
@@ -1232,7 +1258,7 @@ If you're experiencing several of these symptoms:
               )}
 
               {/* Line Chart */}
-              <div className="mobile-card">
+              <div className="glass-card">
                 <h2 className="section-title mb-4">📈 30-Day Protein</h2>
                 <div className="relative h-64">
                   <svg className="w-full h-full" viewBox="0 0 800 250">
@@ -1292,7 +1318,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Calendar View */}
-              <div className="mobile-card">
+              <div className="glass-card">
                 <h2 className="section-title mb-4">📅 Calendar</h2>
                 <div className="grid grid-cols-7 gap-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
@@ -1357,7 +1383,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {educationContent.map((section, index) => (
-                <details key={section.id} className="mobile-card mb-3" open={index === 0}>
+                <details key={section.id} className="glass-card mb-3" open={index === 0}>
                   <summary className="cursor-pointer flex items-center gap-3 -m-5 p-5">
                     <div className="text-3xl">{section.icon}</div>
                     <h3 className="text-base font-bold flex-1">{section.title}</h3>
@@ -1399,7 +1425,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* The Problem Section */}
-              <div className="mobile-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--error)' }}>
+              <div className="glass-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--error)' }}>
                 <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--dark-text)' }}>The Problem We're Solving</h2>
                 <div className="space-y-4 text-base" style={{ color: 'var(--neutral-gray)', lineHeight: 1.7 }}>
                   <p>
@@ -1415,7 +1441,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* The Solution Section */}
-              <div className="mobile-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--primary)' }}>
+              <div className="glass-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--primary)' }}>
                 <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--primary)' }}>Our Approach</h2>
                 <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
                   Created by a Registered Dietitian to help you build sustainable habits that last.
@@ -1433,7 +1459,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Call to Action */}
-              <div className="text-center mobile-card">
+              <div className="text-center glass-card">
                 <p className="text-sm mb-4 font-semibold" style={{ color: 'var(--text-secondary)' }}>
                   Ready to start tracking?
                 </p>
