@@ -35,8 +35,11 @@ function App() {
     }
   });
 
+  // Landing page state
+  const [showLanding, setShowLanding] = useState(!userProfile.profileComplete);
+
   // Navigation state
-  const [currentView, setCurrentView] = useState('track'); // track, history, learn
+  const [currentView, setCurrentView] = useState('track'); // track, history, learn, why
 
   // Daily tracking state
   const [dailyProtein, setDailyProtein] = useState(0);
@@ -675,34 +678,35 @@ If you're experiencing several of these symptoms:
       {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === false && (
         <>
           {/* Header */}
-          <header className="shadow-medium bg-gradient-primary relative overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-primary-600/50 to-success-600/50 animate-gradient"></div>
-            <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+          <header className="chase-gradient chase-shadow-lg">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div className="animate-slide-up">
-                  <h1 className="text-5xl md:text-6xl font-bold text-white mb-3 flex items-center gap-3 drop-shadow-lg">
-                    <span className="animate-float">💪</span>
-                    <span>GLP-1 Protein Tracker</span>
+                <div className="animate-fade-in">
+                  <div className="text-white text-sm font-semibold mb-3 uppercase tracking-wider opacity-90">
+                    Chase Wellness
+                  </div>
+                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
+                    💪 GLP-1 Protein Tracker
                   </h1>
-                  <p className="text-white/90 text-xl font-medium mb-2">
+                  <p className="text-white text-lg mb-2 font-medium" style={{ opacity: 0.95 }}>
+                    Mindful nourishment for your GLP-1 journey.
+                  </p>
+                  <p className="text-white text-base" style={{ opacity: 0.85 }}>
                     Build sustainable habits • Preserve muscle • Break the yo-yo cycle
                   </p>
-                  <p className="text-white/75 text-base">
-                    RD-designed protein tracking for adults on GLP-1 medications
-                  </p>
                 </div>
-                <div className="flex items-center gap-4 animate-slide-down">
+                <div className="flex items-center gap-4">
                   {currentStreak > 0 && userProfile.profileComplete && (
-                    <div className="glass px-5 py-3 rounded-2xl border-2 border-white/40 shadow-soft">
-                      <div className="text-xs font-bold uppercase text-white/80 tracking-wider">Streak</div>
+                    <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '14px 20px', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
+                      <div className="text-xs font-bold uppercase text-white tracking-wider" style={{ opacity: 0.9 }}>Streak</div>
                       <div className="text-2xl font-bold text-white flex items-center gap-2">
-                        <span className="animate-pulse">🔥</span> {currentStreak} days
+                        🔥 {currentStreak} days
                       </div>
                     </div>
                   )}
                   {trialDaysRemaining > 0 && (
-                    <div className="glass px-6 py-4 rounded-2xl border-2 border-white/40 shadow-soft">
-                      <div className="text-xs font-bold uppercase text-white/80 tracking-wider mb-1">Free Trial</div>
+                    <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '16px 24px', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
+                      <div className="text-xs font-bold uppercase text-white tracking-wider" style={{ opacity: 0.9 }}>Free Trial</div>
                       <div className="text-2xl font-bold text-white">{trialDaysRemaining} days left</div>
                     </div>
                   )}
@@ -713,26 +717,32 @@ If you're experiencing several of these symptoms:
 
           {/* Navigation Tabs */}
           {userProfile.profileComplete && (
-            <div className="bg-white border-b-2 border-neutral-100 shadow-soft sticky top-0 z-40">
+            <div style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 40 }} className="chase-shadow">
               <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex gap-2">
+                <div className="flex gap-1">
                   <button
                     onClick={() => setCurrentView('track')}
-                    className={`nav-tab text-lg ${currentView === 'track' ? 'nav-tab-active' : 'text-neutral-500'}`}
+                    className={`chase-nav-tab ${currentView === 'track' ? 'chase-nav-tab-active' : ''}`}
                   >
                     📊 Track
                   </button>
                   <button
                     onClick={() => setCurrentView('history')}
-                    className={`nav-tab text-lg ${currentView === 'history' ? 'nav-tab-active' : 'text-neutral-500'}`}
+                    className={`chase-nav-tab ${currentView === 'history' ? 'chase-nav-tab-active' : ''}`}
                   >
                     📈 History
                   </button>
                   <button
                     onClick={() => setCurrentView('learn')}
-                    className={`nav-tab text-lg ${currentView === 'learn' ? 'nav-tab-active' : 'text-neutral-500'}`}
+                    className={`chase-nav-tab ${currentView === 'learn' ? 'chase-nav-tab-active' : ''}`}
                   >
                     📚 Learn
+                  </button>
+                  <button
+                    onClick={() => setCurrentView('why')}
+                    className={`chase-nav-tab ${currentView === 'why' ? 'chase-nav-tab-active' : ''}`}
+                  >
+                    💡 Why This App
                   </button>
                 </div>
               </div>
@@ -1353,6 +1363,115 @@ If you're experiencing several of these symptoms:
                   </div>
                 </details>
               ))}
+            </div>
+          )}
+
+          {/* WHY THIS APP VIEW */}
+          {currentView === 'why' && userProfile.profileComplete && (
+            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+              {/* Hero Section */}
+              <div className="text-center mb-16">
+                <h1 className="chase-section-header text-4xl mb-4">Why This App Exists</h1>
+                <p className="chase-section-subheader text-xl max-w-2xl mx-auto">
+                  Because you deserve more than another diet. You deserve compassionate, evidence-based support for lasting change.
+                </p>
+              </div>
+
+              {/* The Problem Section */}
+              <div className="chase-card mb-8">
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--dark-text)' }}>The Problem We're Solving</h2>
+                <div className="space-y-4 text-base" style={{ color: 'var(--neutral-gray)', lineHeight: 1.7 }}>
+                  <p>
+                    <strong style={{ color: 'var(--dark-text)' }}>GLP-1 medications like Ozempic and Wegovy are powerful tools</strong>—but they don't come with instructions for how to eat, what to prioritize, or how to build habits that last beyond the medication.
+                  </p>
+                  <p>
+                    The result? <strong style={{ color: 'var(--dark-text)' }}>25-40% of weight lost is muscle mass.</strong> Without adequate protein and mindful nutrition, people lose strength, slow their metabolism, and struggle to maintain their results. This is why <strong style={{ color: 'var(--dark-text)' }}>80-95% of people regain the weight</strong>—the yo-yo cycle continues.
+                  </p>
+                  <p>
+                    And beyond the physical toll, there's confusion, fear, and overwhelm. What should I eat when I'm not hungry? Is this nausea normal? Am I getting enough nutrients? These questions deserve compassionate, clear answers.
+                  </p>
+                </div>
+              </div>
+
+              {/* The Solution Section */}
+              <div className="chase-card mb-8" style={{ borderLeft: '4px solid var(--brand-blue)' }}>
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--brand-blue)' }}>Our Approach: Evidence-Based Compassion</h2>
+                <div className="space-y-4 text-base" style={{ color: 'var(--neutral-gray)', lineHeight: 1.7 }}>
+                  <p>
+                    <strong style={{ color: 'var(--dark-text)' }}>This app was created by a Registered Dietitian</strong> who understands both the science of nutrition and the human experience of change. We don't believe in willpower or restriction—we believe in understanding, curiosity, and building sustainable patterns.
+                  </p>
+                  <div className="grid md:grid-cols-2 gap-4 my-6">
+                    <div className="chase-alert-info">
+                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>💪 Preserve Your Muscle</h3>
+                      <p className="text-sm">ABW-based protein targets designed specifically for adults on GLP-1s to protect lean mass during rapid weight loss.</p>
+                    </div>
+                    <div className="chase-alert-info">
+                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>🧠 Build Habits That Last</h3>
+                      <p className="text-sm">Daily tracking and education help you develop patterns you can maintain for life—not just while on medication.</p>
+                    </div>
+                    <div className="chase-alert-info">
+                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>📚 Understand Your Body</h3>
+                      <p className="text-sm">Learn to manage side effects, recognize hunger cues, and make informed choices with confidence.</p>
+                    </div>
+                    <div className="chase-alert-info">
+                      <h3 className="font-bold mb-2" style={{ color: 'var(--dark-text)' }}>❤️ Compassionate Guidance</h3>
+                      <p className="text-sm">No judgment, no shame—just gentle, professional support for your unique journey.</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Chase Wellness Values */}
+              <div className="chase-card mb-8" style={{ background: 'var(--light-background)' }}>
+                <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--dark-text)' }}>Our Core Values</h2>
+                <div className="grid md:grid-cols-2 gap-6">
+                  <div>
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
+                      ❤️ Compassion
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
+                      Your journey is unique and worthy of kindness. We meet you where you are, without judgment.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
+                      🔬 Evidence-Based Wisdom
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
+                      Every recommendation is backed by nutrition science and clinical research—no fads, just facts.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
+                      🧘 Body Awareness
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
+                      Learn to listen to your body's signals and honor its needs, even when they change.
+                    </p>
+                  </div>
+                  <div>
+                    <h3 className="font-bold text-lg mb-2 flex items-center gap-2" style={{ color: 'var(--brand-blue)' }}>
+                      🌱 Understanding Over Willpower
+                    </h3>
+                    <p className="text-sm" style={{ color: 'var(--neutral-gray)' }}>
+                      Lasting change comes from insight, not force. We help you understand the "why" behind the "what."
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Call to Action */}
+              <div className="text-center">
+                <p className="text-lg mb-6" style={{ color: 'var(--neutral-gray)' }}>
+                  Ready to build sustainable habits and preserve your hard-earned muscle?
+                </p>
+                <button
+                  onClick={() => setCurrentView('track')}
+                  className="chase-button chase-button-primary text-lg"
+                >
+                  Start Tracking Today →
+                </button>
+              </div>
             </div>
           )}
 

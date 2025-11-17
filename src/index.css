@@ -2,14 +2,230 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Chase Wellness Brand Variables */
+:root {
+  --light-background: #f4f4f0;
+  --dark-text: #000000;
+  --brand-blue: #3498db;
+  --neutral-gray: #808080;
+  --soft-white: #ffffff;
+  --success-green: #4ade80;
+  --warning-yellow: #fbbf24;
+  --error-red: #ef4444;
+}
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  background-color: var(--light-background);
+  color: var(--dark-text);
 }
 
 code {
-  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New', monospace;
+  font-family: 'Courier New', Courier, monospace;
+}
+
+/* Smooth animations */
+* {
+  transition: all 0.2s ease;
+}
+
+/* Chase Wellness Design System */
+.chase-card {
+  background: var(--soft-white);
+  border-radius: 16px;
+  padding: 24px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.chase-card:hover {
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  transform: translateY(-2px);
+}
+
+.chase-button {
+  padding: 14px 32px;
+  border-radius: 12px;
+  font-weight: 600;
+  font-size: 16px;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.chase-button-primary {
+  background: var(--brand-blue);
+  color: white;
+}
+
+.chase-button-primary:hover {
+  background: #2980b9;
+  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
+  transform: translateY(-1px);
+}
+
+.chase-button-secondary {
+  background: transparent;
+  color: var(--brand-blue);
+  border: 2px solid var(--brand-blue);
+}
+
+.chase-button-secondary:hover {
+  background: var(--brand-blue);
+  color: white;
+}
+
+.chase-input {
+  padding: 14px 18px;
+  border-radius: 10px;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  font-size: 16px;
+  background: var(--soft-white);
+  width: 100%;
+  font-family: inherit;
+}
+
+.chase-input:focus {
+  outline: none;
+  border-color: var(--brand-blue);
+  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+}
+
+.chase-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.chase-badge-success {
+  background: rgba(74, 222, 128, 0.15);
+  color: #16a34a;
+}
+
+.chase-badge-warning {
+  background: rgba(251, 191, 36, 0.15);
+  color: #d97706;
+}
+
+.chase-badge-info {
+  background: rgba(52, 152, 219, 0.15);
+  color: var(--brand-blue);
+}
+
+/* Hero gradient */
+.chase-gradient {
+  background: linear-gradient(135deg, var(--brand-blue) 0%, #2980b9 100%);
+}
+
+/* Gentle shadow */
+.chase-shadow {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+}
+
+.chase-shadow-lg {
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+}
+
+/* Alert boxes with compassionate design */
+.chase-alert {
+  padding: 20px;
+  border-radius: 12px;
+  border-left: 4px solid;
+  background: var(--soft-white);
+}
+
+.chase-alert-info {
+  border-left-color: var(--brand-blue);
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.chase-alert-success {
+  border-left-color: var(--success-green);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.chase-alert-warning {
+  border-left-color: var(--warning-yellow);
+  background: rgba(251, 191, 36, 0.05);
+}
+
+/* Progress indicators */
+.chase-progress-bg {
+  background: rgba(0, 0, 0, 0.08);
+  border-radius: 100px;
+  overflow: hidden;
+}
+
+.chase-progress-bar {
+  background: linear-gradient(90deg, var(--brand-blue), #2980b9);
+  border-radius: 100px;
+  transition: width 0.5s ease;
+}
+
+/* Navigation tabs with clean design */
+.chase-nav-tab {
+  padding: 16px 24px;
+  font-weight: 600;
+  color: var(--neutral-gray);
+  border-bottom: 3px solid transparent;
+  cursor: pointer;
+}
+
+.chase-nav-tab:hover {
+  color: var(--dark-text);
+  background: rgba(52, 152, 219, 0.05);
+}
+
+.chase-nav-tab-active {
+  color: var(--brand-blue);
+  border-bottom-color: var(--brand-blue);
+}
+
+/* Smooth fade-in animation */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fade-in {
+  animation: fadeIn 0.5s ease;
+}
+
+/* Clean section headers */
+.chase-section-header {
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--dark-text);
+  margin-bottom: 12px;
+  letter-spacing: -0.5px;
+}
+
+.chase-section-subheader {
+  font-size: 16px;
+  color: var(--neutral-gray);
+  line-height: 1.6;
+}
+
+/* Focus states for accessibility */
+*:focus-visible {
+  outline: 3px solid var(--brand-blue);
+  outline-offset: 2px;
+}
+
+/* Selection styling */
+::selection {
+  background: rgba(52, 152, 219, 0.2);
+  color: var(--dark-text);
 }
