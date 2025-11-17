@@ -2,205 +2,313 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Chase Wellness Brand Variables */
+/* Mobile-First Design System */
 :root {
-  --light-background: #f4f4f0;
-  --dark-text: #000000;
-  --brand-blue: #3498db;
-  --neutral-gray: #808080;
-  --soft-white: #ffffff;
-  --success-green: #4ade80;
-  --warning-yellow: #fbbf24;
-  --error-red: #ef4444;
+  --primary: #3498db;
+  --primary-dark: #2980b9;
+  --success: #10b981;
+  --warning: #f59e0b;
+  --error: #ef4444;
+  --bg-main: #f8f9fa;
+  --bg-card: #ffffff;
+  --text-primary: #1f2937;
+  --text-secondary: #6b7280;
+  --border: #e5e7eb;
+  --shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  --shadow-md: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+* {
+  -webkit-tap-highlight-color: transparent;
 }
 
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Helvetica Neue', Arial, sans-serif;
+  padding: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background-color: var(--light-background);
-  color: var(--dark-text);
+  background-color: var(--bg-main);
+  color: var(--text-primary);
+  overflow-x: hidden;
 }
 
-code {
-  font-family: 'Courier New', Courier, monospace;
-}
-
-/* Smooth animations - only for specific properties to avoid layout shift */
-button, a, input, select, .chase-card, .chase-button, .chase-nav-tab {
-  transition: all 0.2s ease;
-}
-
-/* Chase Wellness Design System */
-.chase-card {
-  background: var(--soft-white);
+/* Mobile-optimized card */
+.mobile-card {
+  background: var(--bg-card);
   border-radius: 16px;
-  padding: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.05);
+  padding: 20px;
+  box-shadow: var(--shadow);
+  margin-bottom: 16px;
 }
 
-.chase-card:hover {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-  transform: translateY(-2px);
-}
-
-.chase-card-glass {
-  background: rgba(255, 255, 255, 0.95);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 28px;
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(255, 255, 255, 0.8);
-}
-
-.chase-button {
-  padding: 14px 32px;
+/* Simplified button */
+.btn-mobile {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
   border-radius: 12px;
   font-weight: 600;
   font-size: 16px;
   border: none;
   cursor: pointer;
   transition: all 0.2s ease;
+  min-height: 48px;
+  touch-action: manipulation;
 }
 
-.chase-button-primary {
-  background: var(--brand-blue);
+.btn-primary {
+  background: var(--primary);
   color: white;
 }
 
-.chase-button-primary:hover {
-  background: #2980b9;
-  box-shadow: 0 4px 12px rgba(52, 152, 219, 0.3);
-  transform: translateY(-1px);
+.btn-primary:active {
+  background: var(--primary-dark);
+  transform: scale(0.98);
 }
 
-.chase-button-secondary {
+.btn-outline {
   background: transparent;
-  color: var(--brand-blue);
-  border: 2px solid var(--brand-blue);
+  color: var(--primary);
+  border: 2px solid var(--primary);
 }
 
-.chase-button-secondary:hover {
-  background: var(--brand-blue);
-  color: white;
+.btn-outline:active {
+  background: rgba(52, 152, 219, 0.1);
 }
 
-.chase-input {
-  padding: 14px 18px;
-  border-radius: 10px;
-  border: 2px solid rgba(0, 0, 0, 0.1);
-  font-size: 16px;
-  background: var(--soft-white);
+/* Bottom navigation */
+.bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--bg-card);
+  border-top: 1px solid var(--border);
+  padding: 8px 0 calc(8px + env(safe-area-inset-bottom));
+  z-index: 1000;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.05);
+}
+
+.nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  font-size: 11px;
+  font-weight: 600;
+  padding: 8px 12px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  min-height: 56px;
+  touch-action: manipulation;
+}
+
+.nav-item-icon {
+  font-size: 24px;
+  margin-bottom: 4px;
+}
+
+.nav-item-active {
+  color: var(--primary);
+}
+
+/* Circular progress */
+.progress-circle {
+  position: relative;
+  width: 200px;
+  height: 200px;
+  margin: 0 auto;
+}
+
+.progress-ring {
+  transform: rotate(-90deg);
+}
+
+.progress-ring-circle {
+  transition: stroke-dashoffset 0.5s ease;
+}
+
+/* Food button - simplified */
+.food-btn {
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 12px;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  min-height: 100px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  touch-action: manipulation;
+}
+
+.food-btn:active {
+  transform: scale(0.95);
+  background: var(--bg-main);
+}
+
+/* Stat card - minimal */
+.stat-card {
+  background: var(--bg-card);
+  border-radius: 16px;
+  padding: 20px;
+  text-align: center;
+  box-shadow: var(--shadow);
+}
+
+/* Input fields - mobile optimized */
+.input-mobile {
   width: 100%;
-  font-family: inherit;
+  padding: 16px;
+  border-radius: 12px;
+  border: 2px solid var(--border);
+  font-size: 16px;
+  background: var(--bg-card);
+  transition: border-color 0.2s ease;
+  -webkit-appearance: none;
+  appearance: none;
 }
 
-.chase-input:focus {
+.input-mobile:focus {
   outline: none;
-  border-color: var(--brand-blue);
-  box-shadow: 0 0 0 4px rgba(52, 152, 219, 0.1);
+  border-color: var(--primary);
 }
 
-.chase-badge {
+/* Badge */
+.badge {
   display: inline-flex;
   align-items: center;
-  padding: 6px 14px;
+  padding: 6px 12px;
   border-radius: 20px;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
 }
 
-.chase-badge-success {
-  background: rgba(74, 222, 128, 0.15);
-  color: #16a34a;
+.badge-success {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
 }
 
-.chase-badge-warning {
-  background: rgba(251, 191, 36, 0.15);
-  color: #d97706;
+.badge-warning {
+  background: rgba(245, 158, 11, 0.1);
+  color: var(--warning);
 }
 
-.chase-badge-info {
-  background: rgba(52, 152, 219, 0.15);
-  color: var(--brand-blue);
+.badge-error {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--error);
 }
 
-/* Hero gradient */
-.chase-gradient {
-  background: linear-gradient(135deg, var(--brand-blue) 0%, #2980b9 100%);
-}
-
-/* Gentle shadow */
-.chase-shadow {
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
-}
-
-.chase-shadow-lg {
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
-}
-
-/* Alert boxes with compassionate design */
-.chase-alert {
-  padding: 20px;
+/* Alert */
+.alert {
+  padding: 16px;
   border-radius: 12px;
   border-left: 4px solid;
-  background: var(--soft-white);
+  margin-bottom: 16px;
 }
 
-.chase-alert-info {
-  border-left-color: var(--brand-blue);
-  background: rgba(52, 152, 219, 0.05);
+.alert-info {
+  background: rgba(52, 152, 219, 0.1);
+  border-left-color: var(--primary);
 }
 
-.chase-alert-success {
-  border-left-color: var(--success-green);
-  background: rgba(74, 222, 128, 0.05);
+.alert-success {
+  background: rgba(16, 185, 129, 0.1);
+  border-left-color: var(--success);
 }
 
-.chase-alert-warning {
-  border-left-color: var(--warning-yellow);
-  background: rgba(251, 191, 36, 0.05);
+.alert-warning {
+  background: rgba(245, 158, 11, 0.1);
+  border-left-color: var(--warning);
 }
 
-/* Progress indicators */
-.chase-progress-bg {
-  background: rgba(0, 0, 0, 0.08);
-  border-radius: 100px;
-  overflow: hidden;
+.alert-error {
+  background: rgba(239, 68, 68, 0.1);
+  border-left-color: var(--error);
 }
 
-.chase-progress-bar {
-  background: linear-gradient(90deg, var(--brand-blue), #2980b9);
-  border-radius: 100px;
-  transition: width 0.5s ease;
+/* Section header */
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 8px;
 }
 
-/* Navigation tabs with clean design */
-.chase-nav-tab {
-  padding: 16px 24px;
+.section-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-bottom: 16px;
+}
+
+/* Category tabs - horizontal scroll */
+.category-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 4px 0;
+  margin-bottom: 20px;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+
+.category-tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.category-tab {
+  flex-shrink: 0;
+  padding: 10px 20px;
+  border-radius: 20px;
+  background: var(--bg-card);
+  border: 1px solid var(--border);
   font-weight: 600;
-  color: var(--neutral-gray);
-  border-bottom: 3px solid transparent;
+  font-size: 14px;
+  color: var(--text-secondary);
   cursor: pointer;
+  transition: all 0.2s ease;
+  touch-action: manipulation;
 }
 
-.chase-nav-tab:hover {
-  color: var(--dark-text);
-  background: rgba(52, 152, 219, 0.05);
+.category-tab-active {
+  background: var(--primary);
+  color: white;
+  border-color: var(--primary);
 }
 
-.chase-nav-tab-active {
-  color: var(--brand-blue);
-  border-bottom-color: var(--brand-blue);
+/* Main content wrapper - account for bottom nav */
+.main-content {
+  padding: 16px;
+  padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  max-width: 600px;
+  margin: 0 auto;
 }
 
-/* Smooth fade-in animation */
+/* Header - simplified */
+.app-header {
+  background: var(--primary);
+  background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+  color: white;
+  padding: 24px 16px;
+  padding-top: calc(24px + env(safe-area-inset-top));
+}
+
+/* Simple animations */
 @keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slideUp {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(20px);
   }
   to {
     opacity: 1;
@@ -208,115 +316,85 @@ button, a, input, select, .chase-card, .chase-button, .chase-nav-tab {
   }
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.5s ease;
+.animate-fade {
+  animation: fadeIn 0.3s ease;
 }
 
-/* Clean section headers */
-.chase-section-header {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--dark-text);
-  margin-bottom: 12px;
-  letter-spacing: -0.5px;
+.animate-slide-up {
+  animation: slideUp 0.4s ease;
 }
 
-.chase-section-subheader {
-  font-size: 16px;
-  color: var(--neutral-gray);
-  line-height: 1.6;
-}
-
-/* Focus states for accessibility */
-*:focus-visible {
-  outline: 3px solid var(--brand-blue);
-  outline-offset: 2px;
-}
-
-/* Selection styling */
-::selection {
-  background: rgba(52, 152, 219, 0.2);
-  color: var(--dark-text);
-}
-
-/* Enhanced interactive elements */
-.chase-hover-lift {
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-}
-
-.chase-hover-lift:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.15);
-}
-
-.chase-hover-scale {
-  transition: transform 0.2s ease;
-}
-
-.chase-hover-scale:hover {
-  transform: scale(1.02);
-}
-
-/* Enhanced stat cards */
-.chase-stat-card {
-  background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.85) 100%);
-  backdrop-filter: blur(10px);
-  border-radius: 20px;
-  padding: 24px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  border: 2px solid rgba(52, 152, 219, 0.1);
-  transition: all 0.3s ease;
-}
-
-.chase-stat-card:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 8px 24px rgba(52, 152, 219, 0.2);
-  border-color: rgba(52, 152, 219, 0.3);
-}
-
-/* Improved progress bars */
-.chase-progress-container {
-  background: linear-gradient(90deg, rgba(0, 0, 0, 0.05) 0%, rgba(0, 0, 0, 0.08) 100%);
-  border-radius: 100px;
+/* Progress bar - simplified */
+.progress-bar-wrapper {
+  background: var(--border);
+  border-radius: 12px;
+  height: 12px;
   overflow: hidden;
-  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
-  height: 16px;
 }
 
-.chase-progress-fill {
+.progress-bar-fill {
   height: 100%;
-  background: linear-gradient(90deg, var(--brand-blue) 0%, #2980b9 50%, var(--brand-blue) 100%);
-  background-size: 200% 100%;
-  animation: shimmer 2s infinite;
-  border-radius: 100px;
-  box-shadow: 0 2px 8px rgba(52, 152, 219, 0.4);
-  transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  background: var(--primary);
+  border-radius: 12px;
+  transition: width 0.5s ease;
 }
 
-@keyframes shimmer {
-  0% { background-position: 200% 0; }
-  100% { background-position: -200% 0; }
+.progress-bar-fill-success {
+  background: var(--success);
 }
 
-/* Food button enhancements */
-.chase-food-btn {
-  background: white;
-  border: 2px solid rgba(0, 0, 0, 0.08);
+.progress-bar-fill-warning {
+  background: var(--warning);
+}
+
+.progress-bar-fill-error {
+  background: var(--error);
+}
+
+/* Target card - mobile optimized */
+.target-card {
+  background: var(--bg-card);
   border-radius: 16px;
-  padding: 20px 16px;
+  padding: 20px;
   text-align: center;
-  cursor: pointer;
-  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+  box-shadow: var(--shadow);
+  border: 2px solid var(--border);
 }
 
-.chase-food-btn:hover {
-  transform: translateY(-4px) scale(1.02);
-  box-shadow: 0 8px 20px rgba(52, 152, 219, 0.15);
-  border-color: var(--brand-blue);
-  background: linear-gradient(135deg, #fff 0%, rgba(52, 152, 219, 0.02) 100%);
+.target-card-primary {
+  border-color: var(--error);
+  background: linear-gradient(135deg, #fef2f2 0%, #ffffff 100%);
 }
 
-.chase-food-btn:active {
-  transform: translateY(-2px) scale(0.98);
+.target-card-secondary {
+  border-color: var(--warning);
+  background: linear-gradient(135deg, #fffbeb 0%, #ffffff 100%);
+}
+
+.target-card-tertiary {
+  border-color: var(--success);
+  background: linear-gradient(135deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+/* List item */
+.list-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  background: var(--bg-card);
+  border-radius: 12px;
+  margin-bottom: 8px;
+  box-shadow: var(--shadow);
+}
+
+/* Safe area support */
+@supports (padding: env(safe-area-inset-bottom)) {
+  .bottom-nav {
+    padding-bottom: calc(8px + env(safe-area-inset-bottom));
+  }
+
+  .main-content {
+    padding-bottom: calc(80px + env(safe-area-inset-bottom));
+  }
 }

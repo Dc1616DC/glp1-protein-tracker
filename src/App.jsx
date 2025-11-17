@@ -677,74 +677,60 @@ If you're experiencing several of these symptoms:
       {/* Main App Content */}
       {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === false && (
         <>
-          {/* Header */}
-          <header className="chase-gradient chase-shadow-lg">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6">
-                <div className="animate-fade-in">
-                  <div className="text-white text-sm font-semibold mb-3 uppercase tracking-wider opacity-90">
+          {/* Header - Simplified */}
+          {userProfile.profileComplete && (
+            <header className="app-header">
+              <div className="flex justify-between items-center">
+                <div>
+                  <div className="text-white text-xs font-semibold mb-1 uppercase tracking-wide opacity-80">
                     Chase Wellness
                   </div>
-                  <h1 className="text-4xl md:text-5xl font-bold text-white mb-3">
-                    💪 GLP-1 Protein Tracker
+                  <h1 className="text-2xl font-bold text-white">
+                    Protein Tracker
                   </h1>
-                  <p className="text-white text-lg mb-2 font-medium" style={{ opacity: 0.95 }}>
-                    Mindful nourishment for your GLP-1 journey.
-                  </p>
-                  <p className="text-white text-base" style={{ opacity: 0.85 }}>
-                    Build sustainable habits • Preserve muscle • Break the yo-yo cycle
-                  </p>
                 </div>
-                <div className="flex items-center gap-4">
-                  {currentStreak > 0 && userProfile.profileComplete && (
-                    <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '14px 20px', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
-                      <div className="text-xs font-bold uppercase text-white tracking-wider" style={{ opacity: 0.9 }}>Streak</div>
-                      <div className="text-2xl font-bold text-white flex items-center gap-2">
-                        🔥 {currentStreak} days
-                      </div>
-                    </div>
-                  )}
-                  {trialDaysRemaining > 0 && (
-                    <div style={{ background: 'rgba(255,255,255,0.15)', backdropFilter: 'blur(10px)', padding: '16px 24px', borderRadius: '16px', border: '2px solid rgba(255,255,255,0.2)' }}>
-                      <div className="text-xs font-bold uppercase text-white tracking-wider" style={{ opacity: 0.9 }}>Free Trial</div>
-                      <div className="text-2xl font-bold text-white">{trialDaysRemaining} days left</div>
-                    </div>
-                  )}
-                </div>
+                {currentStreak > 0 && (
+                  <div className="text-right">
+                    <div className="text-xs text-white opacity-80 font-semibold">STREAK</div>
+                    <div className="text-2xl font-bold text-white">🔥 {currentStreak}</div>
+                  </div>
+                )}
               </div>
-            </div>
-          </header>
+            </header>
+          )}
 
-          {/* Navigation Tabs */}
+          {/* Bottom Navigation */}
           {userProfile.profileComplete && (
-            <div style={{ background: 'white', borderBottom: '1px solid rgba(0,0,0,0.08)', position: 'sticky', top: 0, zIndex: 40 }} className="chase-shadow">
-              <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="flex gap-1">
-                  <button
-                    onClick={() => setCurrentView('track')}
-                    className={`chase-nav-tab ${currentView === 'track' ? 'chase-nav-tab-active' : ''}`}
-                  >
-                    📊 Track
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('history')}
-                    className={`chase-nav-tab ${currentView === 'history' ? 'chase-nav-tab-active' : ''}`}
-                  >
-                    📈 History
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('learn')}
-                    className={`chase-nav-tab ${currentView === 'learn' ? 'chase-nav-tab-active' : ''}`}
-                  >
-                    📚 Learn
-                  </button>
-                  <button
-                    onClick={() => setCurrentView('why')}
-                    className={`chase-nav-tab ${currentView === 'why' ? 'chase-nav-tab-active' : ''}`}
-                  >
-                    💡 Why This App
-                  </button>
-                </div>
+            <div className="bottom-nav">
+              <div className="flex justify-around items-center">
+                <button
+                  onClick={() => setCurrentView('track')}
+                  className={`nav-item ${currentView === 'track' ? 'nav-item-active' : ''}`}
+                >
+                  <div className="nav-item-icon">📊</div>
+                  <div>Track</div>
+                </button>
+                <button
+                  onClick={() => setCurrentView('history')}
+                  className={`nav-item ${currentView === 'history' ? 'nav-item-active' : ''}`}
+                >
+                  <div className="nav-item-icon">📈</div>
+                  <div>History</div>
+                </button>
+                <button
+                  onClick={() => setCurrentView('learn')}
+                  className={`nav-item ${currentView === 'learn' ? 'nav-item-active' : ''}`}
+                >
+                  <div className="nav-item-icon">📚</div>
+                  <div>Learn</div>
+                </button>
+                <button
+                  onClick={() => setCurrentView('why')}
+                  className={`nav-item ${currentView === 'why' ? 'nav-item-active' : ''}`}
+                >
+                  <div className="nav-item-icon">💡</div>
+                  <div>Why</div>
+                </button>
               </div>
             </div>
           )}
@@ -915,137 +901,124 @@ If you're experiencing several of these symptoms:
 
           {/* TRACK VIEW */}
           {currentView === 'track' && userProfile.profileComplete && abwData.proteinTargets.minimum > 0 && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div className="main-content">
               {/* Calorie Reminder */}
-              <div className="alert-info animate-slide-down">
-                <div className="flex items-start gap-3">
-                  <div className="text-3xl">💡</div>
+              <div className="alert alert-info">
+                <div className="flex items-start gap-2">
+                  <div className="text-xl">💡</div>
                   <div className="flex-1">
-                    <p className="font-bold text-lg text-neutral-900 mb-1">
-                      Daily Reminder: Don't forget your minimum calories!
+                    <p className="font-semibold text-sm mb-1">
+                      Daily Reminder
                     </p>
-                    <p className="text-sm text-neutral-600">
-                      {userProfile.gender === 'female' ? 'Women' : 'Men'}: At least {abwData.calorieGuidance.minimum} calories/day. Undereating causes muscle loss even with adequate protein.
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
+                      Min {abwData.calorieGuidance.minimum} cal/day to preserve muscle
                     </p>
                   </div>
                 </div>
               </div>
 
-              {/* Protein Targets Card */}
-              <div className="chase-card-glass shadow-hard p-8 border-t-4 border-success-600 animate-slide-up">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-                  <div>
-                    <h2 className="section-header">Your Daily Protein Targets</h2>
-                    <p className="text-neutral-600 text-lg">
-                      Based on Adjusted Body Weight (ABW): <strong className="text-primary-600">{abwData.abwKg} kg</strong> | BMI: <strong className="text-primary-600">{abwData.bmi}</strong>
-                    </p>
-                  </div>
+              {/* Protein Targets */}
+              <div className="mobile-card">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="section-title">Daily Targets</h2>
                   <button
                     onClick={handleEditProfile}
-                    className="btn-outline px-6 py-3 text-sm font-semibold chase-hover-scale"
+                    className="btn-mobile btn-outline text-xs px-3 py-2"
+                    style={{ minHeight: '36px' }}
                   >
-                    ✏️ Edit Profile
+                    Edit
                   </button>
                 </div>
-                <div className="alert-info mb-8 border-l-4 border-blue-400 shadow-soft">
-                  <p className="text-base font-semibold text-neutral-900">
-                    💡 Build Habits That Last: These targets help you preserve muscle while your medication helps with appetite. Track daily to build sustainable patterns you can maintain long-term.
-                  </p>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="chase-stat-card text-center p-8 bg-gradient-to-br from-error-50 to-error-100 border-2 border-error-200">
-                    <div className="text-6xl mb-4">🎯</div>
-                    <div className="text-sm font-bold mb-3 text-error-600 uppercase tracking-wider">Minimum</div>
-                    <div className="text-7xl font-bold mb-3 text-error-600" style={{lineHeight: '1'}}>{abwData.proteinTargets.minimum}g</div>
-                    <div className="text-sm mb-3 font-semibold text-error-500 bg-white/50 rounded-full py-1 px-3 inline-block">1.2 g/kg ABW</div>
-                    <div className="text-base text-neutral-700 font-medium">Baseline for protecting muscle mass</div>
+                <div className="grid grid-cols-3 gap-3 mb-4">
+                  <div className="target-card target-card-primary">
+                    <div className="text-3xl mb-2">🎯</div>
+                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--error)' }}>MIN</div>
+                    <div className="text-3xl font-bold" style={{ color: 'var(--error)', lineHeight: '1' }}>{abwData.proteinTargets.minimum}</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
                   </div>
 
-                  <div className="chase-stat-card text-center p-8 bg-gradient-to-br from-warning-50 to-warning-100 border-2 border-warning-200">
-                    <div className="text-6xl mb-4">⭐</div>
-                    <div className="text-sm font-bold mb-3 text-warning-600 uppercase tracking-wider">Target</div>
-                    <div className="text-7xl font-bold mb-3 text-warning-600" style={{lineHeight: '1'}}>{abwData.proteinTargets.target}g</div>
-                    <div className="text-sm mb-3 font-semibold text-warning-500 bg-white/50 rounded-full py-1 px-3 inline-block">1.4 g/kg ABW</div>
-                    <div className="text-base text-neutral-700 font-medium">Strong protection, aim for this daily</div>
+                  <div className="target-card target-card-secondary">
+                    <div className="text-3xl mb-2">⭐</div>
+                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--warning)' }}>TARGET</div>
+                    <div className="text-3xl font-bold" style={{ color: 'var(--warning)', lineHeight: '1' }}>{abwData.proteinTargets.target}</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
                   </div>
 
-                  <div className="chase-stat-card text-center p-8 bg-gradient-to-br from-success-50 to-success-100 border-2 border-success-200">
-                    <div className="text-6xl mb-4">🏆</div>
-                    <div className="text-sm font-bold mb-3 text-success-600 uppercase tracking-wider">Higher Protein</div>
-                    <div className="text-7xl font-bold mb-3 text-success-600" style={{lineHeight: '1'}}>{abwData.proteinTargets.higher}g</div>
-                    <div className="text-sm mb-3 font-semibold text-success-500 bg-white/50 rounded-full py-1 px-3 inline-block">1.6 g/kg ABW</div>
-                    <div className="text-base text-neutral-700 font-medium">Maximum muscle preservation</div>
+                  <div className="target-card target-card-tertiary">
+                    <div className="text-3xl mb-2">🏆</div>
+                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--success)' }}>HIGH</div>
+                    <div className="text-3xl font-bold" style={{ color: 'var(--success)', lineHeight: '1' }}>{abwData.proteinTargets.higher}</div>
+                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
                   </div>
                 </div>
+
+                <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
+                  ABW: {abwData.abwKg} kg | BMI: {abwData.bmi}
+                </p>
               </div>
 
-              {/* Daily Progress Card */}
-              <div className="chase-card-glass shadow-hard p-8">
-                <div className="flex flex-col md:flex-row md:justify-between md:items-center gap-4 mb-8">
-                  <h2 className="section-header">Today's Progress</h2>
+              {/* Daily Progress */}
+              <div className="mobile-card">
+                <div className="flex justify-between items-center mb-4">
+                  <h2 className="section-title">Today's Progress</h2>
                   <button
                     onClick={handleResetDay}
-                    className="btn bg-error-50 text-error-700 hover:bg-error-100 border-2 border-error-200 px-5 py-3 text-sm font-semibold chase-hover-scale"
+                    className="btn-mobile btn-outline text-xs px-3 py-2"
+                    style={{ minHeight: '36px', color: 'var(--error)' }}
                   >
-                    🔄 Reset Day
+                    Reset
                   </button>
                 </div>
 
                 {/* Status Display */}
-                <div className={`p-12 rounded-3xl mb-8 border-3 transition-all duration-300 shadow-soft ${
-                  statusColor === 'red' ? 'status-critical' :
-                  statusColor === 'yellow' ? 'status-warning' :
-                  statusColor === 'green' ? 'status-success' :
-                  statusColor === 'gold' ? 'status-optimal' : 'bg-neutral-100 border-neutral-200'
-                }`}>
-                  <div className="text-center">
-                    <div className={`text-9xl font-bold mb-6 ${
-                      statusColor === 'red' ? 'text-error-600' :
-                      statusColor === 'yellow' ? 'text-warning-600' :
-                      statusColor === 'green' ? 'text-success-600' :
-                      statusColor === 'gold' ? 'text-gradient-energy' : 'text-neutral-500'
-                    }`} style={{lineHeight: '1'}}>{dailyProtein}g</div>
-                    <div className="text-2xl font-bold mb-8 text-neutral-900">{currentStatus}</div>
-                    <div className="chase-progress-container mb-4">
-                      <div
-                        className="chase-progress-fill"
-                        style={{
-                          width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`
-                        }}
-                      />
-                    </div>
-                    <div className="flex justify-between text-sm mt-6 text-neutral-600 font-semibold">
-                      <span className="text-base">0g</span>
-                      <span className="text-lg font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum</span>
-                      <span className="text-base">{abwData.proteinTargets.higher}g</span>
-                    </div>
+                <div className="text-center mb-6">
+                  <div className="text-7xl font-bold mb-3" style={{
+                    color: statusColor === 'red' ? 'var(--error)' :
+                           statusColor === 'yellow' ? 'var(--warning)' :
+                           statusColor === 'green' ? 'var(--success)' :
+                           statusColor === 'gold' ? 'var(--success)' : 'var(--text-secondary)',
+                    lineHeight: '1'
+                  }}>
+                    {dailyProtein}g
                   </div>
-                </div>
 
-                {/* Quick Tip Box */}
-                <div className="bg-gradient-to-r from-purple-50 to-primary-50 rounded-xl p-5 mb-8 border-l-4 border-purple-500 shadow-soft">
-                  <div className="flex items-start gap-3">
-                    <div className="text-3xl">💡</div>
-                    <div className="flex-1">
-                      <p className="text-base font-bold text-neutral-900 mb-2">Feeling nauseous or low appetite?</p>
-                      <p className="text-sm text-neutral-600 leading-relaxed">
-                        Try easily digestible options like Greek yogurt, eggs, or protein shakes. Spread protein across smaller portions throughout the day. Check the <strong>Learn tab</strong> for detailed tips on managing GLP-1 side effects.
-                      </p>
-                    </div>
+                  <div className={`badge mb-4 ${
+                    statusColor === 'red' ? 'badge-error' :
+                    statusColor === 'yellow' ? 'badge-warning' :
+                    'badge-success'
+                  }`}>
+                    {currentStatus}
+                  </div>
+
+                  <div className="progress-bar-wrapper mb-2">
+                    <div
+                      className={`progress-bar-fill ${
+                        statusColor === 'red' ? 'progress-bar-fill-error' :
+                        statusColor === 'yellow' ? 'progress-bar-fill-warning' :
+                        'progress-bar-fill-success'
+                      }`}
+                      style={{
+                        width: `${Math.min(100, (dailyProtein / abwData.proteinTargets.higher) * 100)}%`
+                      }}
+                    />
+                  </div>
+
+                  <div className="flex justify-between text-xs" style={{ color: 'var(--text-secondary)' }}>
+                    <span>0g</span>
+                    <span className="font-bold">{Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}%</span>
+                    <span>{abwData.proteinTargets.higher}g</span>
                   </div>
                 </div>
 
                 {/* Category Tabs */}
-                <div className="flex gap-3 mb-8 overflow-x-auto pb-2 scrollbar-custom">
+                <div className="category-tabs">
                   {Object.keys(proteinFoods).map((category) => (
                     <button
                       key={category}
                       onClick={() => setActiveCategory(category)}
-                      className={`px-8 py-4 rounded-xl font-semibold whitespace-nowrap transition-all duration-200 ${
-                        activeCategory === category
-                          ? 'bg-primary-600 text-white shadow-glow-primary scale-105'
-                          : 'bg-neutral-100 text-neutral-700 hover:bg-neutral-200 chase-hover-scale'
+                      className={`category-tab ${
+                        activeCategory === category ? 'category-tab-active' : ''
                       }`}
                     >
                       {formatCategoryName(category)}
@@ -1054,68 +1027,79 @@ If you're experiencing several of these symptoms:
                 </div>
 
                 {/* Quick Add Buttons */}
-                <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
+                <div className="grid grid-cols-3 gap-2 mb-4">
                   {proteinFoods[activeCategory].map((food) => (
                     <button
                       key={food.name}
                       onClick={() => quickAddProtein(food.name, food.grams)}
-                      className="chase-food-btn"
+                      className="food-btn"
                     >
-                      <div className="text-5xl mb-3">{food.icon}</div>
-                      <div className="text-xs font-bold mb-2 text-neutral-900 leading-tight">{food.name}</div>
-                      <div className="text-2xl font-bold text-primary-600">+{food.grams}g</div>
+                      <div className="text-3xl mb-2">{food.icon}</div>
+                      <div className="text-xs font-bold mb-1 leading-tight" style={{ color: 'var(--text-primary)' }}>
+                        {food.name.length > 15 ? food.name.substring(0, 12) + '...' : food.name}
+                      </div>
+                      <div className="text-lg font-bold" style={{ color: 'var(--primary)' }}>+{food.grams}g</div>
                     </button>
                   ))}
                 </div>
 
                 {/* Custom Add */}
-                <div className="p-8 rounded-2xl border-2 border-dashed border-neutral-300 bg-neutral-50/50">
-                  <h3 className="font-bold text-lg mb-6 text-neutral-900">Add Custom Entry</h3>
-                  <div className="flex gap-4 flex-wrap">
+                <div className="mobile-card" style={{ borderStyle: 'dashed' }}>
+                  <h3 className="section-subtitle mb-3">Add Custom Entry</h3>
+                  <div className="space-y-2">
                     <input
                       type="text"
                       value={customFood}
                       onChange={(e) => setCustomFood(e.target.value)}
                       placeholder="Food name (optional)"
-                      className="input flex-1 min-w-[200px]"
+                      className="input-mobile"
                     />
-                    <input
-                      type="number"
-                      value={customAmount}
-                      onChange={(e) => setCustomAmount(e.target.value)}
-                      placeholder="Protein (g)"
-                      className="input w-40"
-                    />
-                    <button
-                      onClick={handleAddCustom}
-                      disabled={!customAmount || parseInt(customAmount) <= 0}
-                      className={`btn px-8 ${
-                        customAmount && parseInt(customAmount) > 0
-                          ? 'btn-primary'
-                          : 'bg-neutral-200 text-neutral-400 cursor-not-allowed'
-                      }`}
-                    >
-                      Add
-                    </button>
+                    <div className="flex gap-2">
+                      <input
+                        type="number"
+                        value={customAmount}
+                        onChange={(e) => setCustomAmount(e.target.value)}
+                        placeholder="Protein (g)"
+                        className="input-mobile flex-1"
+                      />
+                      <button
+                        onClick={handleAddCustom}
+                        disabled={!customAmount || parseInt(customAmount) <= 0}
+                        className={`btn-mobile ${
+                          customAmount && parseInt(customAmount) > 0
+                            ? 'btn-primary'
+                            : ''
+                        }`}
+                        style={!customAmount || parseInt(customAmount) <= 0 ? {
+                          background: 'var(--border)',
+                          color: 'var(--text-secondary)',
+                          cursor: 'not-allowed'
+                        } : {}}
+                      >
+                        Add
+                      </button>
+                    </div>
                   </div>
                 </div>
 
                 {/* Today's Log */}
                 {proteinLog.length > 0 && (
-                  <div className="mt-8">
-                    <h3 className="font-bold mb-4 text-lg" style={{ color: '#12263f' }}>
-                      Today's Log <span className="text-sm font-normal" style={{ color: '#6e84a3' }}>({proteinLog.length} entries)</span>
+                  <div className="mobile-card">
+                    <h3 className="section-title mb-4">
+                      Today's Log <span className="text-sm font-normal" style={{ color: 'var(--text-secondary)' }}>({proteinLog.length})</span>
                     </h3>
-                    <div className="space-y-3 max-h-96 overflow-y-auto">
+                    <div className="space-y-2 max-h-80 overflow-y-auto">
                       {proteinLog.map((entry, index) => (
-                        <div key={index} className="flex justify-between items-center px-4 py-4 rounded-lg border-2 transition-all duration-200 hover:shadow-md" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
-                          <div className="flex items-center gap-3">
-                            <span className="font-bold text-xs px-3 py-1 rounded-full text-white" style={{ backgroundColor: '#2c7be5' }}>#{index + 1}</span>
-                            <span className="font-semibold" style={{ color: '#12263f' }}>{entry.food}</span>
+                        <div key={index} className="list-item">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-bold px-2 py-1 rounded-full text-white" style={{ background: 'var(--primary)' }}>
+                              {index + 1}
+                            </span>
+                            <span className="font-semibold text-sm">{entry.food}</span>
                           </div>
                           <div className="text-right">
-                            <span className="font-bold text-xl mr-2" style={{ color: '#2c7be5' }}>{entry.grams}g</span>
-                            <span className="text-xs" style={{ color: '#6e84a3' }}>{entry.time}</span>
+                            <div className="font-bold text-lg" style={{ color: 'var(--primary)' }}>{entry.grams}g</div>
+                            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{entry.time}</div>
                           </div>
                         </div>
                       ))}
@@ -1124,81 +1108,41 @@ If you're experiencing several of these symptoms:
                 )}
               </div>
 
-              {/* Insights Card */}
-              <div className="rounded-2xl shadow-xl p-8 border-2" style={{ background: 'linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)', borderColor: '#93c5fd' }}>
-                <h2 className="text-3xl font-bold mb-6 flex items-center gap-3" style={{ color: '#12263f' }}>
-                  💡 Muscle Preservation Analysis
-                </h2>
-                <div className="space-y-4">
-                  <div className="bg-white p-5 rounded-xl border-2" style={{ borderColor: '#d2ddec' }}>
-                    <p style={{ color: '#3e4b5b' }}>
-                      <strong style={{ color: '#12263f' }}>Current Adequacy:</strong> {Math.round((dailyProtein / abwData.proteinTargets.minimum) * 100)}% of minimum target
-                    </p>
-                  </div>
-
-                  {dailyProtein < abwData.proteinTargets.minimum && (
-                    <div className="bg-red-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #e63757' }}>
-                      <p className="font-bold mb-2" style={{ color: '#e63757', fontSize: '1.1rem' }}>⚠️ Action Required</p>
-                      <p style={{ color: '#3e4b5b' }}>
-                        You need <strong style={{ color: '#e63757' }}>{abwData.proteinTargets.minimum - dailyProtein}g more protein</strong> today to meet your minimum target and protect muscle mass.
-                      </p>
-                    </div>
-                  )}
-
-                  {dailyProtein >= abwData.proteinTargets.minimum && dailyProtein < abwData.proteinTargets.higher && (
-                    <div className="bg-green-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #059669' }}>
-                      <p className="font-bold mb-2" style={{ color: '#059669', fontSize: '1.1rem' }}>✅ Good Progress!</p>
-                      <p style={{ color: '#3e4b5b' }}>
-                        You're meeting your minimum. Add <strong style={{ color: '#059669' }}>{abwData.proteinTargets.higher - dailyProtein}g more</strong> to reach higher protein target.
-                      </p>
-                    </div>
-                  )}
-
-                  {dailyProtein >= abwData.proteinTargets.higher && (
-                    <div className="bg-amber-50 p-5 rounded-xl" style={{ borderLeft: '4px solid #f6c343' }}>
-                      <p className="font-bold mb-2" style={{ color: '#f6c343', fontSize: '1.1rem' }}>🏆 Excellent Work!</p>
-                      <p style={{ color: '#3e4b5b' }}>
-                        You've reached your higher protein target. Your muscles are well-protected during weight loss!
-                      </p>
-                    </div>
-                  )}
-                </div>
-              </div>
             </div>
           )}
 
           {/* HISTORY VIEW */}
           {currentView === 'history' && userProfile.profileComplete && (
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+            <div className="main-content">
               {/* Stats Overview */}
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 animate-slide-up">
-                <div className="chase-stat-card bg-gradient-to-br from-orange-50 to-orange-100 border-2 border-orange-200">
-                  <div className="text-5xl mb-3">🔥</div>
-                  <div className="text-5xl font-bold mb-2" style={{ color: '#2c7be5', lineHeight: '1' }}>{currentStreak}</div>
-                  <div className="text-base font-semibold" style={{ color: '#6e84a3' }}>Current Streak</div>
+              <div className="grid grid-cols-3 gap-3 mb-4">
+                <div className="stat-card">
+                  <div className="text-4xl mb-2">🔥</div>
+                  <div className="text-3xl font-bold mb-1" style={{ color: 'var(--primary)', lineHeight: '1' }}>{currentStreak}</div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Streak</div>
                 </div>
-                <div className="chase-stat-card bg-gradient-to-br from-yellow-50 to-yellow-100 border-2 border-yellow-200">
-                  <div className="text-5xl mb-3">🏆</div>
-                  <div className="text-5xl font-bold mb-2" style={{ color: '#f6c343', lineHeight: '1' }}>{longestStreak}</div>
-                  <div className="text-base font-semibold" style={{ color: '#6e84a3' }}>Longest Streak</div>
+                <div className="stat-card">
+                  <div className="text-4xl mb-2">🏆</div>
+                  <div className="text-3xl font-bold mb-1" style={{ color: 'var(--warning)', lineHeight: '1' }}>{longestStreak}</div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Longest</div>
                 </div>
-                <div className="chase-stat-card bg-gradient-to-br from-green-50 to-green-100 border-2 border-green-200">
-                  <div className="text-5xl mb-3">📊</div>
-                  <div className="text-5xl font-bold mb-2" style={{ color: '#059669', lineHeight: '1' }}>{getAchievementRate()}%</div>
-                  <div className="text-base font-semibold" style={{ color: '#6e84a3' }}>Success Rate (30 days)</div>
+                <div className="stat-card">
+                  <div className="text-4xl mb-2">📊</div>
+                  <div className="text-3xl font-bold mb-1" style={{ color: 'var(--success)', lineHeight: '1' }}>{getAchievementRate()}%</div>
+                  <div className="text-xs font-semibold" style={{ color: 'var(--text-secondary)' }}>Success</div>
                 </div>
               </div>
 
               {/* Achievement Badges */}
               {achievements.length > 0 && (
-                <div className="chase-card-glass shadow-xl p-8 animate-fade-in">
-                  <h2 className="text-3xl font-bold mb-8" style={{ color: '#12263f' }}>🏅 Your Achievements</h2>
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div className="mobile-card">
+                  <h2 className="section-title mb-4">🏅 Achievements</h2>
+                  <div className="grid grid-cols-2 gap-3">
                     {achievements.map(achievement => (
-                      <div key={achievement.id} className="text-center p-6 rounded-2xl border-2 chase-hover-lift" style={{ backgroundColor: '#f9fbfd', borderColor: '#d2ddec' }}>
-                        <div className="text-6xl mb-3">{achievement.icon}</div>
-                        <div className="font-bold text-base mb-1" style={{ color: '#12263f' }}>{achievement.name}</div>
-                        <div className="text-sm" style={{ color: '#6e84a3' }}>{achievement.description}</div>
+                      <div key={achievement.id} className="text-center p-4 rounded-xl" style={{ background: 'var(--bg-main)' }}>
+                        <div className="text-4xl mb-2">{achievement.icon}</div>
+                        <div className="font-bold text-xs mb-1">{achievement.name}</div>
+                        <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{achievement.description}</div>
                       </div>
                     ))}
                   </div>
@@ -1206,8 +1150,8 @@ If you're experiencing several of these symptoms:
               )}
 
               {/* Line Chart */}
-              <div className="chase-card-glass shadow-xl p-8 animate-fade-in">
-                <h2 className="text-2xl font-bold mb-6" style={{ color: '#12263f' }}>📈 30-Day Protein Intake</h2>
+              <div className="mobile-card">
+                <h2 className="section-title mb-4">📈 30-Day Protein</h2>
                 <div className="relative h-64">
                   <svg className="w-full h-full" viewBox="0 0 800 250">
                     {/* Grid lines */}
@@ -1266,8 +1210,8 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Calendar View */}
-              <div className="chase-card-glass shadow-xl p-8 animate-fade-in">
-                <h2 className="text-3xl font-bold mb-8" style={{ color: '#12263f' }}>📅 30-Day Calendar</h2>
+              <div className="mobile-card">
+                <h2 className="section-title mb-4">📅 Calendar</h2>
                 <div className="grid grid-cols-7 gap-2">
                   {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(day => (
                     <div key={day} className="text-center font-bold text-sm py-2" style={{ color: '#6e84a3' }}>
@@ -1322,22 +1266,22 @@ If you're experiencing several of these symptoms:
 
           {/* LEARN VIEW */}
           {currentView === 'learn' && userProfile.profileComplete && (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-6">
-              <div className="text-center mb-12 animate-slide-up">
-                <h2 className="text-5xl font-bold mb-4" style={{ color: '#12263f' }}>📚 Education Center</h2>
-                <p className="text-xl" style={{ color: '#6e84a3' }}>
-                  Evidence-based information to help you preserve muscle during GLP-1 weight loss
+            <div className="main-content">
+              <div className="text-center mb-6">
+                <h2 className="section-title mb-2">📚 Education</h2>
+                <p className="section-subtitle">
+                  Learn about muscle preservation on GLP-1s
                 </p>
               </div>
 
               {educationContent.map((section, index) => (
-                <details key={section.id} className="chase-card-glass shadow-lg overflow-hidden animate-fade-in border-2 border-neutral-200" open={index === 0}>
-                  <summary className="px-8 py-7 cursor-pointer hover:bg-gray-50 transition-all duration-200 flex items-center gap-5 chase-hover-scale">
-                    <div className="text-5xl">{section.icon}</div>
-                    <h3 className="text-2xl font-bold flex-1" style={{ color: '#12263f' }}>{section.title}</h3>
-                    <div className="text-2xl" style={{ color: '#6e84a3' }}>▼</div>
+                <details key={section.id} className="mobile-card mb-3" open={index === 0}>
+                  <summary className="cursor-pointer flex items-center gap-3 -m-5 p-5">
+                    <div className="text-3xl">{section.icon}</div>
+                    <h3 className="text-base font-bold flex-1">{section.title}</h3>
+                    <div className="text-lg" style={{ color: 'var(--text-secondary)' }}>▼</div>
                   </summary>
-                  <div className="px-8 py-8 border-t-2 bg-white/50" style={{ borderColor: '#edf2f9' }}>
+                  <div className="pt-4 border-t mt-4" style={{ borderColor: 'var(--border)' }}>
                     <div className="prose max-w-none" style={{ color: '#3e4b5b' }}>
                       {section.content.split('\n\n').map((paragraph, i) => {
                         if (paragraph.startsWith('**') && paragraph.endsWith('**')) {
@@ -1362,18 +1306,18 @@ If you're experiencing several of these symptoms:
 
           {/* WHY THIS APP VIEW */}
           {currentView === 'why' && userProfile.profileComplete && (
-            <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 py-12 animate-fade-in">
+            <div className="main-content">
               {/* Hero Section */}
-              <div className="text-center mb-20 animate-slide-up">
-                <div className="text-7xl mb-6">💡</div>
-                <h1 className="chase-section-header text-5xl mb-6 leading-tight">Why This App Exists</h1>
-                <p className="chase-section-subheader text-2xl max-w-2xl mx-auto leading-relaxed">
-                  Because you deserve more than another diet. You deserve compassionate, evidence-based support for lasting change.
+              <div className="text-center mb-6">
+                <div className="text-6xl mb-4">💡</div>
+                <h1 className="section-title mb-3">Why This App</h1>
+                <p className="section-subtitle">
+                  Evidence-based support for lasting change
                 </p>
               </div>
 
               {/* The Problem Section */}
-              <div className="chase-card-glass shadow-xl mb-10 border-l-4 border-red-400">
+              <div className="mobile-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--error)' }}>
                 <h2 className="text-2xl font-bold mb-4" style={{ color: 'var(--dark-text)' }}>The Problem We're Solving</h2>
                 <div className="space-y-4 text-base" style={{ color: 'var(--neutral-gray)', lineHeight: 1.7 }}>
                   <p>
@@ -1389,35 +1333,33 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* The Solution Section */}
-              <div className="chase-card-glass shadow-xl mb-10 border-l-4 border-blue-400">
-                <h2 className="text-3xl font-bold mb-6" style={{ color: 'var(--brand-blue)' }}>Our Approach: Evidence-Based Compassion</h2>
-                <div className="space-y-6 text-lg" style={{ color: 'var(--neutral-gray)', lineHeight: 1.8 }}>
-                  <p>
-                    <strong style={{ color: 'var(--dark-text)' }}>This app was created by a Registered Dietitian</strong> who understands both the science of nutrition and the human experience of change. We don't believe in willpower or restriction—we believe in understanding, curiosity, and building sustainable patterns.
-                  </p>
-                  <div className="grid md:grid-cols-2 gap-6 my-8">
-                    <div className="chase-stat-card bg-gradient-to-br from-blue-50 to-blue-100 border-2 border-blue-200">
-                      <h3 className="font-bold mb-3 text-lg" style={{ color: 'var(--dark-text)' }}>💪 Preserve Your Muscle</h3>
-                      <p className="text-base">ABW-based protein targets designed specifically for adults on GLP-1s to protect lean mass during rapid weight loss.</p>
-                    </div>
-                    <div className="chase-stat-card bg-gradient-to-br from-purple-50 to-purple-100 border-2 border-purple-200">
-                      <h3 className="font-bold mb-3 text-lg" style={{ color: 'var(--dark-text)' }}>🧠 Build Habits That Last</h3>
-                      <p className="text-base">Daily tracking and education help you develop patterns you can maintain for life—not just while on medication.</p>
-                    </div>
+              <div className="mobile-card mb-4 border-l-4" style={{ borderLeftColor: 'var(--primary)' }}>
+                <h2 className="text-lg font-bold mb-3" style={{ color: 'var(--primary)' }}>Our Approach</h2>
+                <p className="text-sm mb-4" style={{ color: 'var(--text-secondary)', lineHeight: 1.6 }}>
+                  Created by a Registered Dietitian to help you build sustainable habits that last.
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="p-3 rounded-xl" style={{ background: 'var(--bg-main)' }}>
+                    <h3 className="font-bold mb-2 text-xs">💪 Preserve Muscle</h3>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>ABW-based targets for GLP-1 users</p>
+                  </div>
+                  <div className="p-3 rounded-xl" style={{ background: 'var(--bg-main)' }}>
+                    <h3 className="font-bold mb-2 text-xs">🧠 Build Habits</h3>
+                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>Track daily, learn, succeed</p>
                   </div>
                 </div>
               </div>
 
               {/* Call to Action */}
-              <div className="text-center chase-card-glass shadow-xl p-10">
-                <p className="text-2xl mb-8 font-semibold" style={{ color: 'var(--neutral-gray)' }}>
-                  Ready to build sustainable habits and preserve your hard-earned muscle?
+              <div className="text-center mobile-card">
+                <p className="text-sm mb-4 font-semibold" style={{ color: 'var(--text-secondary)' }}>
+                  Ready to start tracking?
                 </p>
                 <button
                   onClick={() => setCurrentView('track')}
-                  className="chase-button chase-button-primary text-xl px-10 py-5 chase-hover-lift"
+                  className="btn-mobile btn-primary w-full"
                 >
-                  Start Tracking Today →
+                  Start Tracking →
                 </button>
               </div>
             </div>
