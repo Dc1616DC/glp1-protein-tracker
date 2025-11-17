@@ -316,6 +316,8 @@ function App() {
    * Export data to JSON
    */
   const exportToJSON = () => {
+    const trackingData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+
     const exportData = {
       profile: {
         gender: userProfile.gender,
@@ -327,7 +329,7 @@ function App() {
       proteinTargets: abwData.proteinTargets,
       currentStreak,
       longestStreak,
-      proteinHistory,
+      trackingHistory: trackingData,
       achievements,
       exportDate: new Date().toISOString()
     };
@@ -348,9 +350,10 @@ function App() {
    * Export data to CSV
    */
   const exportToCSV = () => {
+    const trackingData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
     let csv = 'Date,Protein (g),Target Met,Foods Logged\n';
 
-    Object.entries(proteinHistory).forEach(([date, data]) => {
+    Object.entries(trackingData).forEach(([date, data]) => {
       const foods = data.log.map(entry => `${entry.food} (${entry.grams}g)`).join('; ');
       const targetMet = data.total >= abwData.proteinTargets.minimum ? 'Yes' : 'No';
       csv += `${date},${data.total},${targetMet},"${foods}"\n`;
@@ -1189,7 +1192,7 @@ If you're experiencing several of these symptoms:
               </div>
 
               {/* Export Data */}
-              {Object.keys(proteinHistory).length > 0 && (
+              {Object.keys(JSON.parse(localStorage.getItem('proteinTracking') || '{}')).length > 0 && (
                 <div className="mobile-card">
                   <h3 className="section-title mb-3">📥 Export Your Data</h3>
                   <p className="text-xs mb-3" style={{ color: 'var(--text-secondary)' }}>
