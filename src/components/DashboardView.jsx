@@ -9,7 +9,6 @@ import {
   Download,
   Lightbulb
 } from 'lucide-react';
-import CircularProgress from './CircularProgress';
 
 const DashboardView = ({
   user,
@@ -49,13 +48,13 @@ const DashboardView = ({
   };
 
   return (
-    <div className="max-w-4xl mx-auto pb-24 px-4">
+    <div className="max-w-4xl mx-auto pb-24">
       {/* Header */}
-      <header className="bg-white p-6 rounded-3xl shadow-sm mb-6 border border-slate-100">
+      <header className="bg-white p-6 rounded-b-3xl shadow-sm mb-6 border-b border-slate-100">
         <div className="flex justify-between items-center mb-6">
           <div>
             <h1 className="text-2xl font-bold text-slate-800">
-              Hi{user?.name ? `, ${user.name}` : ''}
+              Hi, {user?.name || 'there'}
             </h1>
             <p className="text-slate-500 text-sm">
               Muscle Preservation Mode: <span className="text-indigo-600 font-semibold">Active</span>
@@ -63,16 +62,9 @@ const DashboardView = ({
           </div>
           <div className="flex items-center gap-2">
             <button
-              onClick={onEditProfile}
-              className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-              title="Edit Profile"
-            >
-              <Activity className="w-5 h-5" />
-            </button>
-            <button
               onClick={onExportData}
               className="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-xl transition-colors"
-              title="Export Data"
+              title="Export Data for Analysis"
             >
               <Download className="w-5 h-5" />
             </button>
@@ -82,42 +74,67 @@ const DashboardView = ({
           </div>
         </div>
 
-        {/* Circular Progress - Hero Element */}
-        <motion.div
-          initial={{ scale: 0.8, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ duration: 0.5 }}
-          className="flex justify-center my-6"
-        >
-          <CircularProgress
-            value={dailyProtein}
-            goal={proteinTargets.minimum}
-            streak={currentStreak}
-            size={280}
-          />
-        </motion.div>
+        {/* Stats & Charts Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
 
-        {/* Stats Summary Cards */}
-        <div className="grid grid-cols-2 gap-3 mt-6">
-          <div className="bg-gradient-to-br from-indigo-50 to-indigo-100 rounded-xl p-4 border border-indigo-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Trophy className="w-4 h-4 text-indigo-600" />
-              <span className="text-xs font-semibold text-indigo-700 uppercase tracking-wide">Current Streak</span>
+          {/* Protein Focus Card */}
+          <div className="md:col-span-2 bg-gradient-to-br from-indigo-600 to-indigo-700 rounded-2xl p-6 text-white relative overflow-hidden shadow-lg shadow-indigo-200 flex flex-col justify-between min-h-[180px]">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-5 rounded-full blur-2xl -mt-10 -mr-10"></div>
+
+            <div className="flex justify-between items-start z-10">
+              <div className="flex items-center gap-2 opacity-90">
+                <div className="p-1.5 bg-white/20 rounded-lg">
+                  <Beef className="w-5 h-5" />
+                </div>
+                <span className="text-sm font-semibold uppercase tracking-wide">Protein Goal</span>
+              </div>
+              <div className="text-right">
+                <div className="text-xs opacity-75">Target</div>
+                <div className="font-bold">{proteinTargets.minimum}g</div>
+              </div>
             </div>
-            <div className="text-2xl font-bold text-indigo-900">{currentStreak} days</div>
+
+            <div className="mt-4 z-10">
+              <div className="flex items-baseline gap-2">
+                <span className="text-5xl font-bold tracking-tight">{dailyProtein.toFixed(0)}</span>
+                <span className="text-lg opacity-75">g</span>
+              </div>
+              <p className="text-sm text-indigo-100 mt-1">
+                {remainingProtein > 0
+                  ? `${remainingProtein.toFixed(0)}g more to reach your daily target`
+                  : "Great job! You hit your protein target."}
+              </p>
+            </div>
+
+            <div className="mt-4 h-2 bg-indigo-900/30 rounded-full overflow-hidden z-10">
+              <motion.div
+                className="h-full bg-white rounded-full shadow-[0_0_10px_rgba(255,255,255,0.5)]"
+                initial={{ width: 0 }}
+                animate={{ width: `${proteinProgress}%` }}
+                transition={{ duration: 1, ease: "easeOut" }}
+              />
+            </div>
           </div>
-          <div className="bg-gradient-to-br from-amber-50 to-amber-100 rounded-xl p-4 border border-amber-200">
-            <div className="flex items-center gap-2 mb-2">
-              <Flame className="w-4 h-4 text-amber-600" />
-              <span className="text-xs font-semibold text-amber-700 uppercase tracking-wide">Calories</span>
+
+          {/* Calories Card */}
+          <div className="bg-white border border-slate-200 rounded-2xl p-4 flex flex-col items-center justify-center relative shadow-sm min-h-[180px]">
+            <h3 className="text-slate-500 text-xs font-semibold uppercase tracking-wide absolute top-4 left-4 flex items-center gap-1">
+              <Flame className="w-3 h-3 text-amber-500" /> Calories
+            </h3>
+
+            <div className="text-center mt-4">
+              <div className="text-4xl font-bold text-slate-800">{(dailyProtein * 4).toFixed(0)}</div>
+              <div className="text-xs text-slate-400 mt-1">of {calorieGuidance.minimum} kcal</div>
+              <div className="mt-3 flex items-center gap-2">
+                <Trophy className="w-4 h-4 text-indigo-500" />
+                <span className="text-sm font-semibold text-slate-600">{currentStreak} day streak</span>
+              </div>
             </div>
-            <div className="text-2xl font-bold text-amber-900">{(dailyProtein * 4).toFixed(0)}</div>
-            <div className="text-xs text-amber-700">of {calorieGuidance.minimum} kcal</div>
           </div>
         </div>
       </header>
 
-      <div className="space-y-6">
+      <div className="px-4 space-y-6">
         {/* Quick Add Protein Buttons */}
         <div className="bg-white rounded-2xl shadow-sm border border-slate-100 p-6">
           <h3 className="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
