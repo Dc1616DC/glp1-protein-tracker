@@ -19,7 +19,6 @@ function App() {
     heightInches: '',
     medication: '',
     disclaimerAccepted: false,
-    hasKidneyDisease: null,
     profileComplete: false
   });
 
@@ -742,48 +741,8 @@ If you're experiencing several of these symptoms:
         </div>
       )}
 
-      {/* Kidney Disease Screening */}
-      {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === null && (
-        <div className="min-h-screen flex items-center justify-center p-4 bg-gradient-to-br from-neutral-50 to-primary-50/30">
-          <div className="card shadow-hard p-10 max-w-lg w-full border-t-4 border-error-500 animate-scale-in">
-            <div className="text-center mb-8">
-              <div className="text-8xl mb-4 animate-pulse-slow">🏥</div>
-              <h2 className="text-4xl font-bold mb-3 text-neutral-900">Health Screening Required</h2>
-              <p className="text-lg text-neutral-500">We need to ensure this tool is safe for you</p>
-            </div>
-
-            <div className="alert-error mb-8">
-              <p className="font-semibold mb-3 text-neutral-900 text-lg">
-                Do you have kidney disease or any condition affecting kidney function?
-              </p>
-              <p className="text-sm text-neutral-600">
-                High protein intake can be dangerous for individuals with kidney disease. This tool should not be used if you have any kidney-related conditions.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-2 gap-4">
-              <button
-                onClick={() => {
-                  alert('This tool is not safe for use with kidney disease. Please consult your healthcare provider for personalized nutrition guidance.');
-                  window.location.href = 'https://kidney.org';
-                }}
-                className="btn py-5 bg-error-600 text-white shadow-soft hover:bg-error-700 hover:shadow-medium"
-              >
-                Yes, I have kidney disease
-              </button>
-              <button
-                onClick={() => setUserProfile({...userProfile, hasKidneyDisease: false})}
-                className="btn py-5 bg-success-600 text-white shadow-soft hover:bg-success-700 hover:shadow-medium"
-              >
-                No, Continue
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Main App Content */}
-      {userProfile.disclaimerAccepted && userProfile.hasKidneyDisease === false && (
+      {userProfile.disclaimerAccepted && (
         <>
           {/* Header - Simplified */}
           {userProfile.profileComplete && (
@@ -843,140 +802,147 @@ If you're experiencing several of these symptoms:
             </div>
           )}
 
-          {/* Profile Setup */}
+          {/* Profile Setup - Mobile Optimized */}
           {!userProfile.profileComplete && (
-            <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-              <div className="chase-card-glass shadow-hard p-8 md:p-12 border-t-4 border-primary-600 animate-scale-in">
-                <div className="text-center mb-12">
-                  <div className="text-7xl mb-6 animate-float">💪</div>
-                  <h2 className="text-5xl font-bold mb-6 text-neutral-900 leading-tight">Finally, Support Beyond Just Medication</h2>
-                  <p className="text-xl mb-8 text-neutral-600 leading-relaxed">
-                    Studies show 25-40% of weight lost on GLP-1s is muscle mass. Let's change that.
+            <div className="min-h-screen bg-gray-50 px-4 py-6 pb-safe">
+              <div className="max-w-md mx-auto">
+                {/* Header */}
+                <div className="text-center mb-8">
+                  <div className="text-6xl mb-4">💪</div>
+                  <h1 className="text-3xl font-bold mb-3 text-gray-900">Set Up Your Profile</h1>
+                  <p className="text-base text-gray-600">
+                    We'll calculate your personalized protein targets based on your body
                   </p>
-                  <div className="alert-info text-left mb-8">
-                    <p className="font-bold text-lg mb-3 text-neutral-900">You're not looking for another diet...</p>
-                    <p className="text-base text-neutral-700 mb-4 leading-relaxed">
-                      You're tired of the yo-yo cycle. Your GLP-1 medication is helping with appetite, but you need to build sustainable habits that last—proper protein, healthy behaviors, and a saner relationship with food.
-                    </p>
-                    <div className="space-y-2 text-sm font-semibold text-primary-700">
-                      <p>✓ Science-backed by Registered Dietitian</p>
-                      <p>✓ Build habits to maintain your results</p>
-                      <p>✓ Preserve muscle while you lose weight</p>
-                    </div>
-                  </div>
-                  <p className="text-xl font-bold text-neutral-900">Let's calculate your personalized protein targets</p>
                 </div>
 
-                <div className="space-y-8">
-                  {/* Age & Gender Row */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                      <label className="block text-sm font-bold mb-3 text-neutral-900">
-                        Age <span className="text-error-500">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={userProfile.age}
-                        onChange={(e) => setUserProfile({...userProfile, age: e.target.value})}
-                        className="input py-4 text-lg"
-                        placeholder="e.g., 45"
-                        min="18"
-                        max="100"
-                      />
-                    </div>
+                {/* Form - iOS Style */}
+                <div className="space-y-4">
+                  {/* Age */}
+                  <div className="glass-card p-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Age
+                    </label>
+                    <input
+                      type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      value={userProfile.age}
+                      onChange={(e) => setUserProfile({...userProfile, age: e.target.value})}
+                      className="w-full text-2xl font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 p-0"
+                      placeholder="Enter age"
+                      min="18"
+                      max="100"
+                    />
+                  </div>
 
-                    <div>
-                      <label className="block text-sm font-bold mb-3 text-neutral-900">
-                        Gender <span className="text-error-500">*</span>
-                      </label>
-                      <select
-                        value={userProfile.gender}
-                        onChange={(e) => setUserProfile({...userProfile, gender: e.target.value})}
-                        className="input py-4 text-lg"
-                      >
-                        <option value="">Select...</option>
-                        <option value="female">Female</option>
-                        <option value="male">Male</option>
-                      </select>
-                    </div>
+                  {/* Gender */}
+                  <div className="glass-card p-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Gender
+                    </label>
+                    <select
+                      value={userProfile.gender}
+                      onChange={(e) => setUserProfile({...userProfile, gender: e.target.value})}
+                      className="w-full text-xl font-medium text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                      style={{ WebkitAppearance: 'none' }}
+                    >
+                      <option value="">Choose</option>
+                      <option value="female">Female</option>
+                      <option value="male">Male</option>
+                    </select>
+                    <div className="text-right text-gray-400 text-xl">›</div>
                   </div>
 
                   {/* Height */}
-                  <div>
-                    <label className="block text-sm font-bold mb-3 text-neutral-900">
-                      Height <span className="text-error-500">*</span>
+                  <div className="glass-card p-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-3">
+                      Height
                     </label>
-                    <div className="grid grid-cols-2 gap-4">
-                      <input
-                        type="number"
-                        value={userProfile.heightFeet}
-                        onChange={(e) => setUserProfile({...userProfile, heightFeet: e.target.value})}
-                        className="input py-4 text-lg"
-                        placeholder="Feet"
-                        min="4"
-                        max="7"
-                      />
-                      <input
-                        type="number"
-                        value={userProfile.heightInches}
-                        onChange={(e) => setUserProfile({...userProfile, heightInches: e.target.value})}
-                        className="input py-4 text-lg"
-                        placeholder="Inches"
-                        min="0"
-                        max="11"
-                      />
+                    <div className="flex gap-3">
+                      <div className="flex-1">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={userProfile.heightFeet}
+                          onChange={(e) => setUserProfile({...userProfile, heightFeet: e.target.value})}
+                          className="w-full text-2xl font-semibold text-gray-900 bg-white rounded-xl p-4 border-2 border-gray-200 focus:border-teal-400 focus:outline-none transition-colors"
+                          placeholder="5"
+                          min="4"
+                          max="7"
+                        />
+                        <div className="text-center text-sm text-gray-500 mt-1">feet</div>
+                      </div>
+                      <div className="flex-1">
+                        <input
+                          type="number"
+                          inputMode="numeric"
+                          pattern="[0-9]*"
+                          value={userProfile.heightInches}
+                          onChange={(e) => setUserProfile({...userProfile, heightInches: e.target.value})}
+                          className="w-full text-2xl font-semibold text-gray-900 bg-white rounded-xl p-4 border-2 border-gray-200 focus:border-teal-400 focus:outline-none transition-colors"
+                          placeholder="8"
+                          min="0"
+                          max="11"
+                        />
+                        <div className="text-center text-sm text-gray-500 mt-1">inches</div>
+                      </div>
                     </div>
                   </div>
 
                   {/* Weight */}
-                  <div>
-                    <label className="block text-sm font-bold mb-3 text-neutral-900">
-                      Current Weight (lbs) <span className="text-error-500">*</span>
+                  <div className="glass-card p-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      Current Weight (lbs)
                     </label>
                     <input
                       type="number"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
                       value={userProfile.weightLbs}
                       onChange={(e) => setUserProfile({...userProfile, weightLbs: e.target.value})}
-                      className="input py-4 text-lg"
-                      placeholder="e.g., 200"
+                      className="w-full text-2xl font-semibold text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 p-0"
+                      placeholder="Enter weight"
                       min="50"
                       max="800"
                     />
                   </div>
 
                   {/* Medication */}
-                  <div>
-                    <label className="block text-sm font-bold mb-3 text-neutral-900">
-                      GLP-1 Medication <span className="text-error-500">*</span>
+                  <div className="glass-card p-4">
+                    <label className="block text-sm font-semibold text-gray-700 mb-2">
+                      GLP-1 Medication
                     </label>
                     <select
                       value={userProfile.medication}
                       onChange={(e) => setUserProfile({...userProfile, medication: e.target.value})}
-                      className="input py-4 text-lg"
+                      className="w-full text-lg font-medium text-gray-900 bg-transparent border-none focus:outline-none focus:ring-0 p-0 appearance-none cursor-pointer"
+                      style={{ WebkitAppearance: 'none' }}
                     >
-                      <option value="">Select your medication...</option>
-                      <option value="Ozempic">💉 Ozempic (semaglutide)</option>
-                      <option value="Wegovy">💉 Wegovy (semaglutide)</option>
-                      <option value="Mounjaro">💉 Mounjaro (tirzepatide)</option>
-                      <option value="Zepbound">💉 Zepbound (tirzepatide)</option>
-                      <option value="Rybelsus">💊 Rybelsus (oral semaglutide)</option>
-                      <option value="Trulicity">💉 Trulicity (dulaglutide)</option>
-                      <option value="Victoza">💉 Victoza/Saxenda (liraglutide)</option>
-                      <option value="Compounded">🧪 Compounded GLP-1</option>
+                      <option value="">Choose medication</option>
+                      <option value="Ozempic">Ozempic (semaglutide)</option>
+                      <option value="Wegovy">Wegovy (semaglutide)</option>
+                      <option value="Mounjaro">Mounjaro (tirzepatide)</option>
+                      <option value="Zepbound">Zepbound (tirzepatide)</option>
+                      <option value="Rybelsus">Rybelsus (oral semaglutide)</option>
+                      <option value="Trulicity">Trulicity (dulaglutide)</option>
+                      <option value="Victoza">Victoza/Saxenda (liraglutide)</option>
+                      <option value="Compounded">Compounded GLP-1</option>
                     </select>
+                    <div className="text-right text-gray-400 text-xl">›</div>
                   </div>
 
                   {/* Submit Button */}
                   <button
                     onClick={handleCalculateTargets}
                     disabled={!isProfileValid()}
-                    className={`btn w-full py-6 text-xl font-bold shadow-medium ${
+                    className={`w-full py-5 text-lg font-bold rounded-2xl transition-all ${
                       isProfileValid()
-                        ? 'bg-gradient-primary text-white hover:shadow-glow-primary hover:scale-105'
-                        : 'bg-neutral-200 text-neutral-400 cursor-not-allowed opacity-60'
+                        ? 'bg-gradient-to-r from-teal-400 to-green-500 text-white shadow-lg active:scale-98'
+                        : 'bg-gray-200 text-gray-400 cursor-not-allowed'
                     }`}
                   >
-                    🎯 Calculate My Protein Targets
+                    Calculate My Protein Targets
                   </button>
                 </div>
 

@@ -24,12 +24,6 @@ export default function Onboarding({ onComplete }) {
       highlight: "You've got this!"
     },
     {
-      icon: "⚡",
-      title: "Quick Add Button",
-      description: "Tap the green button in the corner to quickly log protein. Choose from 390+ common foods.",
-      highlight: "Easy protein logging"
-    },
-    {
       icon: "🔥",
       title: "Build Your Streak",
       description: "Hit your protein target daily to build streaks and unlock achievements.",
