@@ -13,32 +13,32 @@ export default function Onboarding({ onComplete }) {
     },
     {
       icon: "📊",
-      title: "Animated Progress Ring",
-      description: "Watch your daily protein goal come to life with our beautiful circular progress indicator. Colors change based on your streak!",
-      highlight: "Teal → Purple (7 days) → Gold (30 days)"
+      title: "See Your Progress",
+      description: "Watch your daily protein goal fill up as you log meals throughout the day.",
+      highlight: "Simple and visual"
     },
     {
       icon: "🎊",
       title: "Celebrate Your Wins",
-      description: "Hit your daily protein goal and enjoy confetti celebrations with haptic feedback. Small wins, big motivation!",
+      description: "Hit your daily protein goal and get a fun celebration. Small wins, big motivation!",
       highlight: "You've got this!"
     },
     {
       icon: "⚡",
       title: "Quick Add Button",
-      description: "Use the floating action button (bottom-right) to quickly scroll to food options. Tap any food to instantly log protein.",
-      highlight: "390+ common protein sources"
+      description: "Tap the green button in the corner to quickly log protein. Choose from 390+ common foods.",
+      highlight: "Easy protein logging"
     },
     {
       icon: "🔥",
       title: "Build Your Streak",
-      description: "Hit your minimum protein target daily to build streaks, unlock achievements, and level up your theme colors.",
+      description: "Hit your protein target daily to build streaks and unlock achievements.",
       highlight: "Consistency is key!"
     },
     {
       icon: "🚀",
       title: "You're All Set!",
-      description: "We'll guide you through setting up your profile. Your personalized protein targets are calculated using clinical ABW formulas.",
+      description: "We'll help you set up your profile and calculate your personalized protein targets based on your body.",
       highlight: "Let's get started!"
     }
   ];
