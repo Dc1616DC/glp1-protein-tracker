@@ -10,7 +10,7 @@ export default function Confetti({ play }) {
         loop={false}
         animationData={confetti}
         play={play}
-        speed={1.5}
+        speed={2.5}
         style={{ width: '100%', height: '100%' }}
       />
     </div>
