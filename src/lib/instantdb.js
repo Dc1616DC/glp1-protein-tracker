@@ -10,6 +10,7 @@ export const schema = {
   // User profiles
   profiles: {
     fields: {
+      userId: 'string',
       age: 'number',
       gender: 'string',
       weightLbs: 'number',
@@ -33,6 +34,7 @@ export const schema = {
   // Daily protein logs
   proteinLogs: {
     fields: {
+      userId: 'string',
       date: 'string', // YYYY-MM-DD format
       food: 'string',
       grams: 'number',
@@ -43,6 +45,7 @@ export const schema = {
   // Achievements
   achievements: {
     fields: {
+      userId: 'string',
       achievementId: 'string',
       name: 'string',
       description: 'string',
@@ -54,6 +57,7 @@ export const schema = {
   // Streak data
   streaks: {
     fields: {
+      userId: 'string',
       currentStreak: 'number',
       longestStreak: 'number',
       lastLogDate: 'string',

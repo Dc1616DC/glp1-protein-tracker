@@ -7,6 +7,14 @@ import QuickAddFAB from './components/QuickAddFAB';
 import Onboarding from './components/Onboarding';
 import Auth from './components/Auth';
 import { db } from './lib/instantdb';
+import {
+  saveProfile,
+  logProtein,
+  updateStreak,
+  saveAchievement,
+  deleteProteinLog,
+  migrateLocalStorageData
+} from './lib/dataOperations';
 
 // GLP-1 Protein Tracker with ABW Calculations
 // Uses clinically-validated Adjusted Body Weight formulas
@@ -14,6 +22,42 @@ import { db } from './lib/instantdb';
 function App() {
   // InstantDB authentication
   const { isLoading, user, error } = db.useAuth();
+
+  // Query InstantDB for user data
+  const { data: instantData, isLoading: dataLoading } = db.useQuery(
+    user
+      ? {
+          profiles: {
+            $: {
+              where: {
+                userId: user.id,
+              },
+            },
+          },
+          proteinLogs: {
+            $: {
+              where: {
+                userId: user.id,
+              },
+            },
+          },
+          achievements: {
+            $: {
+              where: {
+                userId: user.id,
+              },
+            },
+          },
+          streaks: {
+            $: {
+              where: {
+                userId: user.id,
+              },
+            },
+          },
+        }
+      : null
+  );
 
   // User profile state
   const [userProfile, setUserProfile] = useState({
@@ -89,31 +133,94 @@ function App() {
     checkTrialStatus();
   }, []);
 
-  // Load saved data on mount
+  // Load saved data from InstantDB or localStorage (migration)
   useEffect(() => {
-    const savedProfile = localStorage.getItem('userProfile');
-    const savedAbwData = localStorage.getItem('abwData');
-    const today = new Date().toDateString();
-    const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
-    const savedAchievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+    // If user is signed in and data is loaded
+    if (user && !dataLoading && instantData) {
+      const hasInstantDBProfile = instantData.profiles && instantData.profiles.length > 0;
+      const hasMigrated = localStorage.getItem('instantdb-migrated') === 'true';
 
-    if (savedProfile) {
-      const profile = JSON.parse(savedProfile);
-      setUserProfile(profile);
+      // If no InstantDB data and haven't migrated yet, trigger migration
+      if (!hasInstantDBProfile && !hasMigrated) {
+        console.log('🔄 Starting data migration to InstantDB...');
+        migrateLocalStorageData(user.id).then((success) => {
+          if (success) {
+            console.log('✅ Migration complete! Reloading data...');
+            // Data will reload automatically via InstantDB query
+          }
+        });
+      } else if (hasInstantDBProfile) {
+        // Load data from InstantDB
+        const profile = instantData.profiles[0];
+        setUserProfile({
+          age: profile.age,
+          gender: profile.gender,
+          weightLbs: profile.weightLbs,
+          heightFeet: profile.heightFeet,
+          heightInches: profile.heightInches,
+          medication: profile.medication,
+          disclaimerAccepted: profile.disclaimerAccepted,
+          profileComplete: profile.profileComplete,
+        });
+
+        setAbwData({
+          bmi: profile.bmi || 0,
+          ibwKg: profile.ibwKg || 0,
+          abwKg: profile.abwKg || 0,
+          proteinTargets: {
+            minimum: profile.proteinMinimum || 0,
+            target: profile.proteinTarget || 0,
+            higher: profile.proteinHigher || 0,
+          },
+          calorieGuidance: {
+            minimum: profile.calorieMinimum || 0,
+            estimated: profile.calorieEstimated || 0,
+          },
+        });
+
+        // Load today's protein logs
+        const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
+        const todaysLogs = instantData.proteinLogs?.filter(log => log.date === today) || [];
+        const totalProtein = todaysLogs.reduce((sum, log) => sum + log.grams, 0);
+        setDailyProtein(totalProtein);
+        setProteinLog(todaysLogs);
+
+        // Load achievements
+        setAchievements(instantData.achievements || []);
+
+        // Load streak data
+        if (instantData.streaks && instantData.streaks.length > 0) {
+          const streakData = instantData.streaks[0];
+          setCurrentStreak(streakData.currentStreak || 0);
+          setLongestStreak(streakData.longestStreak || 0);
+        }
+      }
+    } else if (!user) {
+      // If not signed in, load from localStorage (backward compatibility)
+      const savedProfile = localStorage.getItem('userProfile');
+      const savedAbwData = localStorage.getItem('abwData');
+      const today = new Date().toDateString();
+      const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+      const savedAchievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+
+      if (savedProfile) {
+        const profile = JSON.parse(savedProfile);
+        setUserProfile(profile);
+      }
+
+      if (savedAbwData) {
+        setAbwData(JSON.parse(savedAbwData));
+      }
+
+      if (savedTracking[today]) {
+        setDailyProtein(savedTracking[today].total);
+        setProteinLog(savedTracking[today].log);
+      }
+
+      setAchievements(savedAchievements);
+      calculateStreak();
     }
-
-    if (savedAbwData) {
-      setAbwData(JSON.parse(savedAbwData));
-    }
-
-    if (savedTracking[today]) {
-      setDailyProtein(savedTracking[today].total);
-      setProteinLog(savedTracking[today].log);
-    }
-
-    setAchievements(savedAchievements);
-    calculateStreak();
-  }, []);
+  }, [user, instantData, dataLoading]);
 
   // Calculate streak
   const calculateStreak = () => {
@@ -142,10 +249,65 @@ function App() {
     setLongestStreak(Math.max(longest, streak));
   };
 
+  // Calculate streak from InstantDB data
+  const calculateStreakFromInstantDB = () => {
+    if (!instantData || !instantData.proteinLogs) return;
+
+    // Group logs by date and check if target was met
+    const logsByDate = {};
+    instantData.proteinLogs.forEach(log => {
+      if (!logsByDate[log.date]) {
+        logsByDate[log.date] = 0;
+      }
+      logsByDate[log.date] += log.grams;
+    });
+
+    let streak = 0;
+    let longest = 0;
+    let tempStreak = 0;
+
+    // Check last 365 days for streaks
+    for (let i = 0; i < 365; i++) {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      const dateStr = date.toISOString().split('T')[0]; // YYYY-MM-DD
+
+      const dayTotal = logsByDate[dateStr] || 0;
+      const metTarget = dayTotal >= abwData.proteinTargets.minimum;
+
+      if (metTarget) {
+        tempStreak++;
+        if (i === 0) streak = tempStreak; // Current streak
+      } else {
+        if (tempStreak > longest) longest = tempStreak;
+        tempStreak = 0;
+      }
+    }
+
+    if (tempStreak > longest) longest = tempStreak;
+
+    const newCurrentStreak = streak;
+    const newLongestStreak = Math.max(longest, streak);
+
+    setCurrentStreak(newCurrentStreak);
+    setLongestStreak(newLongestStreak);
+
+    // Save streak to InstantDB
+    if (user) {
+      const today = new Date().toISOString().split('T')[0];
+      updateStreak(user.id, newCurrentStreak, newLongestStreak, today);
+    }
+
+    // Check achievements
+    checkAchievements(newCurrentStreak, dailyProtein);
+  };
+
   // Check and award achievements
   const checkAchievements = (streak, total) => {
     const newAchievements = [];
-    const existingAchievements = JSON.parse(localStorage.getItem('achievements') || '[]');
+    const existingAchievements = user && instantData?.achievements
+      ? instantData.achievements
+      : JSON.parse(localStorage.getItem('achievements') || '[]');
 
     const achievementsList = [
       { id: 'first_day', name: 'First Day Complete', description: 'Tracked your first day of protein', icon: '🎯', condition: () => true },
@@ -156,14 +318,22 @@ function App() {
     ];
 
     achievementsList.forEach(achievement => {
-      if (achievement.condition() && !existingAchievements.some(a => a.id === achievement.id)) {
+      if (achievement.condition() && !existingAchievements.some(a => a.achievementId === achievement.id || a.id === achievement.id)) {
         newAchievements.push(achievement);
         existingAchievements.push(achievement);
       }
     });
 
     if (newAchievements.length > 0) {
-      localStorage.setItem('achievements', JSON.stringify(existingAchievements));
+      if (user) {
+        // Save to InstantDB
+        newAchievements.forEach(achievement => {
+          saveAchievement(user.id, achievement);
+        });
+      } else {
+        // Fallback to localStorage
+        localStorage.setItem('achievements', JSON.stringify(existingAchievements));
+      }
       setAchievements(existingAchievements);
       setShowAchievement(newAchievements[0]);
       setTimeout(() => setShowAchievement(null), 5000);
@@ -227,9 +397,25 @@ function App() {
     setAbwData(calculatedData);
     setUserProfile({...userProfile, profileComplete: true});
 
-    // Save to localStorage
-    localStorage.setItem('abwData', JSON.stringify(calculatedData));
-    localStorage.setItem('userProfile', JSON.stringify({...userProfile, profileComplete: true}));
+    // Save to InstantDB if user is signed in
+    if (user) {
+      saveProfile(user.id, {
+        ...userProfile,
+        profileComplete: true,
+        bmi: calculatedData.bmi,
+        ibwKg: calculatedData.ibwKg,
+        abwKg: calculatedData.abwKg,
+        proteinMinimum: calculatedData.proteinTargets.minimum,
+        proteinTarget: calculatedData.proteinTargets.target,
+        proteinHigher: calculatedData.proteinTargets.higher,
+        calorieMinimum: calculatedData.calorieGuidance.minimum,
+        calorieEstimated: calculatedData.calorieGuidance.estimated,
+      });
+    } else {
+      // Fallback to localStorage if not signed in
+      localStorage.setItem('abwData', JSON.stringify(calculatedData));
+      localStorage.setItem('userProfile', JSON.stringify({...userProfile, profileComplete: true}));
+    }
   };
 
   /**
@@ -295,35 +481,48 @@ function App() {
       }, 3000);
     }
 
-    // Save to localStorage
-    const today = new Date().toDateString();
-    const savedData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+    // Save to InstantDB if user is signed in
+    const today = new Date().toISOString().split('T')[0]; // YYYY-MM-DD
     const metTarget = newTotal >= abwData.proteinTargets.minimum;
 
-    savedData[today] = {
-      total: newTotal,
-      log: newLog,
-      target: abwData.proteinTargets.minimum,
-      metTarget: metTarget
-    };
-    localStorage.setItem('proteinTracking', JSON.stringify(savedData));
+    if (user) {
+      // Save protein log to InstantDB
+      logProtein(user.id, today, newEntry);
 
-    // Check achievements
-    if (metTarget) {
-      calculateStreak();
-      const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
-      let streak = 0;
-      for (let i = 0; i < 365; i++) {
-        const date = new Date();
-        date.setDate(date.getDate() - i);
-        const dateStr = date.toDateString();
-        if (savedTracking[dateStr]?.metTarget) {
-          streak++;
-        } else {
-          break;
-        }
+      // Update streak if target is met
+      if (metTarget) {
+        calculateStreakFromInstantDB();
       }
-      checkAchievements(streak, newTotal);
+    } else {
+      // Fallback to localStorage if not signed in
+      const todayStr = new Date().toDateString();
+      const savedData = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+
+      savedData[todayStr] = {
+        total: newTotal,
+        log: newLog,
+        target: abwData.proteinTargets.minimum,
+        metTarget: metTarget
+      };
+      localStorage.setItem('proteinTracking', JSON.stringify(savedData));
+
+      // Check achievements
+      if (metTarget) {
+        calculateStreak();
+        const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+        let streak = 0;
+        for (let i = 0; i < 365; i++) {
+          const date = new Date();
+          date.setDate(date.getDate() - i);
+          const dateStr = date.toDateString();
+          if (savedTracking[dateStr]?.metTarget) {
+            streak++;
+          } else {
+            break;
+          }
+        }
+        checkAchievements(streak, newTotal);
+      }
     }
   };
 
