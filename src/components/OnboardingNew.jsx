@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Ruler, Shield, ArrowRight, Activity } from 'lucide-react';
+import { User, Ruler, Activity, Shield, ArrowRight } from 'lucide-react';
 
 export default function OnboardingNew({ onComplete }) {
   const [step, setStep] = useState(1);
@@ -22,7 +22,6 @@ export default function OnboardingNew({ onComplete }) {
     if (step < 4) {
       setStep(step + 1);
     } else {
-      // Validate disclaimer is accepted
       if (formData.disclaimerAccepted) {
         onComplete(formData);
       }
@@ -48,18 +47,16 @@ export default function OnboardingNew({ onComplete }) {
   return (
     <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
       <div className="max-w-md w-full bg-white rounded-2xl shadow-xl overflow-hidden">
-        {/* Header */}
+        {/* Indigo Header */}
         <div className="bg-indigo-600 p-6 text-white">
-          <h1 className="text-2xl font-bold">MuscleGuard</h1>
-          <p className="text-indigo-100 text-sm mt-1">
-            Protein tracking for GLP-1 users
-          </p>
+          <h1 className="text-2xl font-bold">Welcome to MuscleGuard</h1>
+          <p className="text-indigo-100 text-sm mt-1">Let's tailor your plan for GLP-1 success.</p>
         </div>
 
         <div className="p-8">
-          {/* Step 1: Basic Info */}
+          {/* Step 1: About You */}
           {step === 1 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
+            <div className="space-y-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                 <User className="w-5 h-5 text-indigo-600" /> About You
               </h2>
@@ -67,9 +64,7 @@ export default function OnboardingNew({ onComplete }) {
               <div className="space-y-4">
                 <div className="grid grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-1">
-                      Age
-                    </label>
+                    <label className="block text-sm font-medium text-slate-600 mb-1">Age</label>
                     <input
                       type="number"
                       inputMode="numeric"
@@ -77,14 +72,10 @@ export default function OnboardingNew({ onComplete }) {
                       placeholder="25"
                       value={formData.age}
                       onChange={(e) => handleChange('age', e.target.value)}
-                      min="18"
-                      max="100"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-slate-600 mb-1">
-                      Gender
-                    </label>
+                    <label className="block text-sm font-medium text-slate-600 mb-1">Gender</label>
                     <select
                       className="w-full p-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
                       value={formData.gender}
@@ -97,9 +88,7 @@ export default function OnboardingNew({ onComplete }) {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">
-                    GLP-1 Medication
-                  </label>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">GLP-1 Medication</label>
                   <select
                     className="w-full p-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
                     value={formData.medication}
@@ -116,26 +105,20 @@ export default function OnboardingNew({ onComplete }) {
                     <option value="Compounded">Compounded GLP-1</option>
                   </select>
                 </div>
-
-                <div className="bg-blue-50 rounded-lg p-3 text-xs text-blue-800 leading-relaxed">
-                  💡 We use your info to calculate personalized protein targets based on clinically-validated formulas.
-                </div>
               </div>
             </div>
           )}
 
           {/* Step 2: Body Metrics */}
           {step === 2 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
+            <div className="space-y-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                 <Ruler className="w-5 h-5 text-indigo-600" /> Body Metrics
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-1">
-                    Current Weight (lbs)
-                  </label>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Current Weight (lbs)</label>
                   <input
                     type="number"
                     inputMode="numeric"
@@ -143,15 +126,11 @@ export default function OnboardingNew({ onComplete }) {
                     placeholder="e.g., 180"
                     value={formData.weightLbs}
                     onChange={(e) => handleChange('weightLbs', e.target.value)}
-                    min="50"
-                    max="800"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-3">
-                    Height
-                  </label>
+                  <label className="block text-sm font-medium text-slate-600 mb-3">Height</label>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
                       <input
@@ -161,8 +140,6 @@ export default function OnboardingNew({ onComplete }) {
                         placeholder="5"
                         value={formData.heightFeet}
                         onChange={(e) => handleChange('heightFeet', e.target.value)}
-                        min="4"
-                        max="7"
                       />
                       <div className="text-center text-sm text-slate-500 mt-1">feet</div>
                     </div>
@@ -174,16 +151,10 @@ export default function OnboardingNew({ onComplete }) {
                         placeholder="8"
                         value={formData.heightInches}
                         onChange={(e) => handleChange('heightInches', e.target.value)}
-                        min="0"
-                        max="11"
                       />
                       <div className="text-center text-sm text-slate-500 mt-1">inches</div>
                     </div>
                   </div>
-                </div>
-
-                <div className="bg-amber-50 rounded-lg p-3 text-xs text-amber-800 leading-relaxed">
-                  📏 We calculate your Adjusted Body Weight (ABW) to determine precise protein needs for muscle preservation.
                 </div>
               </div>
             </div>
@@ -191,31 +162,27 @@ export default function OnboardingNew({ onComplete }) {
 
           {/* Step 3: Activity Level */}
           {step === 3 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
+            <div className="space-y-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                <Activity className="w-5 h-5 text-indigo-600" /> Activity Level
+                <Activity className="w-5 h-5 text-indigo-600" /> Lifestyle
               </h2>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-slate-600 mb-3">
-                    How active are you?
-                  </label>
+                  <label className="block text-sm font-medium text-slate-600 mb-1">Activity Level</label>
                   <select
                     className="w-full p-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
                     value={formData.activityLevel}
                     onChange={(e) => handleChange('activityLevel', e.target.value)}
                   >
-                    <option value="Sedentary">Sedentary (office job, little exercise)</option>
+                    <option value="Sedentary">Sedentary (office job)</option>
                     <option value="Lightly Active">Lightly Active (1-3 days/week)</option>
                     <option value="Moderately Active">Moderately Active (3-5 days/week)</option>
                     <option value="Very Active">Very Active (6-7 days/week)</option>
-                    <option value="Extremely Active">Extremely Active (athlete/physical job)</option>
                   </select>
-                </div>
-
-                <div className="bg-indigo-50 rounded-lg p-3 text-xs text-indigo-800 leading-relaxed">
-                  💪 We factor this into your protein needs to support muscle maintenance during weight loss.
+                  <p className="text-xs text-slate-500 mt-2">
+                    We factor this into your protein needs to support muscle maintenance.
+                  </p>
                 </div>
               </div>
             </div>
@@ -223,26 +190,18 @@ export default function OnboardingNew({ onComplete }) {
 
           {/* Step 4: Disclaimer */}
           {step === 4 && (
-            <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
+            <div className="space-y-6">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
-                <Shield className="w-5 h-5 text-indigo-600" /> Important Information
+                <Shield className="w-5 h-5 text-indigo-600" /> Important
               </h2>
 
               <div className="space-y-4">
                 <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <h3 className="font-bold text-red-900 mb-2 flex items-center gap-2">
-                    ⚠️ Medical Disclaimer
-                  </h3>
+                  <h3 className="font-bold text-red-900 mb-2">⚠️ Medical Disclaimer</h3>
                   <div className="text-sm text-red-800 space-y-2 leading-relaxed">
-                    <p>
-                      This tool is for <strong>educational purposes only</strong> and does not replace medical advice.
-                    </p>
-                    <p>
-                      <strong>Not safe for:</strong> Individuals with kidney disease or chronic kidney conditions.
-                    </p>
-                    <p>
-                      Always consult your healthcare provider before making dietary changes, especially when on GLP-1 medications.
-                    </p>
+                    <p>This tool is for <strong>educational purposes only</strong>.</p>
+                    <p><strong>Not safe for:</strong> Individuals with kidney disease.</p>
+                    <p>Always consult your healthcare provider before making dietary changes.</p>
                   </div>
                 </div>
 
@@ -254,13 +213,9 @@ export default function OnboardingNew({ onComplete }) {
                     className="mt-1 w-5 h-5 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
                   />
                   <span className="text-sm text-slate-700 leading-relaxed">
-                    I understand this is educational only and does not replace medical advice. I will consult my healthcare provider about dietary changes.
+                    I understand this is educational only and will consult my healthcare provider.
                   </span>
                 </label>
-
-                <div className="bg-green-50 rounded-lg p-3 text-xs text-green-800 leading-relaxed">
-                  ✅ Built by a Registered Dietitian using clinically-validated formulas
-                </div>
               </div>
             </div>
           )}
@@ -276,7 +231,7 @@ export default function OnboardingNew({ onComplete }) {
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
-              {step === 4 ? 'Start Tracking' : 'Next'} <ArrowRight className="w-4 h-4" />
+              {step === 4 ? 'Start Journey' : 'Next'} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
