@@ -3,15 +3,31 @@ import { db } from '../lib/instantdb';
 
 export default function Auth() {
   const [email, setEmail] = useState('');
+  const [code, setCode] = useState('');
   const [sentEmail, setSentEmail] = useState(false);
+  const [verifying, setVerifying] = useState(false);
 
-  const handleMagicLink = async () => {
+  const handleSendCode = async () => {
     try {
       await db.auth.sendMagicCode({ email });
       setSentEmail(true);
     } catch (error) {
-      console.error('Error sending magic link:', error);
-      alert('Failed to send magic link. Please try again.');
+      console.error('Error sending code:', error);
+      alert('Failed to send verification code. Please try again.');
+    }
+  };
+
+  const handleVerifyCode = async () => {
+    if (!code) return;
+
+    setVerifying(true);
+    try {
+      await db.auth.signInWithMagicCode({ email, code });
+      // Auth state will update automatically via useAuth hook
+    } catch (error) {
+      console.error('Error verifying code:', error);
+      alert('Invalid code. Please check your email and try again.');
+      setVerifying(false);
     }
   };
 
@@ -50,7 +66,7 @@ export default function Auth() {
             </div>
 
             <button
-              onClick={handleMagicLink}
+              onClick={handleSendCode}
               disabled={!email}
               className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
                 email
@@ -58,7 +74,7 @@ export default function Auth() {
                   : 'bg-gray-200 text-gray-400 cursor-not-allowed'
               }`}
             >
-              Send Magic Link
+              Send Verification Code
             </button>
 
             {/* Divider */}
@@ -102,21 +118,64 @@ export default function Auth() {
             </p>
           </div>
         ) : (
-          <div className="text-center">
-            <div className="text-5xl mb-4">✉️</div>
-            <h2 className="text-2xl font-bold mb-3 text-gray-900">Check Your Email</h2>
-            <p className="text-gray-600 mb-6">
-              We sent a magic link to <strong>{email}</strong>
-            </p>
-            <p className="text-sm text-gray-500 mb-6">
-              Click the link in your email to sign in. The link will expire in 15 minutes.
-            </p>
-            <button
-              onClick={() => setSentEmail(false)}
-              className="text-teal-600 font-semibold hover:text-teal-700"
-            >
-              Use a different email
-            </button>
+          <div>
+            <div className="text-center mb-6">
+              <div className="text-5xl mb-4">✉️</div>
+              <h2 className="text-2xl font-bold mb-3 text-gray-900">Enter Verification Code</h2>
+              <p className="text-gray-600">
+                We sent a 6-digit code to <strong>{email}</strong>
+              </p>
+            </div>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                  Verification Code
+                </label>
+                <input
+                  type="text"
+                  value={code}
+                  onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+                  placeholder="000000"
+                  className="w-full px-4 py-3 rounded-xl border-2 border-gray-200 focus:border-teal-400 focus:outline-none text-2xl text-center font-mono tracking-widest"
+                  maxLength="6"
+                  inputMode="numeric"
+                  pattern="[0-9]*"
+                  autoFocus
+                />
+              </div>
+
+              <button
+                onClick={handleVerifyCode}
+                disabled={code.length !== 6 || verifying}
+                className={`w-full py-4 rounded-xl font-semibold text-lg transition-all ${
+                  code.length === 6 && !verifying
+                    ? 'bg-gradient-to-r from-teal-400 to-green-500 text-white shadow-lg hover:shadow-xl'
+                    : 'bg-gray-200 text-gray-400 cursor-not-allowed'
+                }`}
+              >
+                {verifying ? 'Verifying...' : 'Sign In'}
+              </button>
+
+              <div className="flex justify-between items-center text-sm">
+                <button
+                  onClick={() => setSentEmail(false)}
+                  className="text-teal-600 font-semibold hover:text-teal-700"
+                >
+                  Use different email
+                </button>
+                <button
+                  onClick={handleSendCode}
+                  className="text-gray-500 hover:text-gray-700"
+                >
+                  Resend code
+                </button>
+              </div>
+
+              <p className="text-xs text-center text-gray-500 mt-4">
+                Code expires in 15 minutes
+              </p>
+            </div>
           </div>
         )}
       </div>
