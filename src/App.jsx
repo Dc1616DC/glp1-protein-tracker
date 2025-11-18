@@ -5,11 +5,16 @@ import CircularProgress from './components/CircularProgress';
 import Confetti from './components/Confetti';
 import QuickAddFAB from './components/QuickAddFAB';
 import Onboarding from './components/Onboarding';
+import Auth from './components/Auth';
+import { db } from './lib/instantdb';
 
 // GLP-1 Protein Tracker with ABW Calculations
 // Uses clinically-validated Adjusted Body Weight formulas
 
 function App() {
+  // InstantDB authentication
+  const { isLoading, user, error } = db.useAuth();
+
   // User profile state
   const [userProfile, setUserProfile] = useState({
     age: '',
@@ -694,6 +699,23 @@ If you're experiencing several of these symptoms:
   // Show onboarding if not completed
   if (!onboardingComplete) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
+
+  // Show loading while checking authentication
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-gradient-to-br from-teal-50 via-purple-50 to-pink-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="text-6xl mb-4 animate-bounce">💪</div>
+          <p className="text-xl font-semibold text-gray-700">Loading...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Show auth screen if not logged in
+  if (!user) {
+    return <Auth />;
   }
 
   return (
