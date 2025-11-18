@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { User, Ruler, Shield, ArrowRight } from 'lucide-react';
+import { User, Ruler, Shield, ArrowRight, Activity } from 'lucide-react';
 
 export default function OnboardingNew({ onComplete }) {
   const [step, setStep] = useState(1);
@@ -10,6 +10,7 @@ export default function OnboardingNew({ onComplete }) {
     heightFeet: '',
     heightInches: '',
     medication: '',
+    activityLevel: 'Sedentary',
     disclaimerAccepted: false
   });
 
@@ -18,7 +19,7 @@ export default function OnboardingNew({ onComplete }) {
   };
 
   const handleNext = () => {
-    if (step < 3) {
+    if (step < 4) {
       setStep(step + 1);
     } else {
       // Validate disclaimer is accepted
@@ -36,6 +37,9 @@ export default function OnboardingNew({ onComplete }) {
       return formData.weightLbs && formData.heightFeet && formData.heightInches;
     }
     if (step === 3) {
+      return formData.activityLevel;
+    }
+    if (step === 4) {
       return formData.disclaimerAccepted;
     }
     return false;
@@ -185,8 +189,40 @@ export default function OnboardingNew({ onComplete }) {
             </div>
           )}
 
-          {/* Step 3: Disclaimer */}
+          {/* Step 3: Activity Level */}
           {step === 3 && (
+            <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
+              <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
+                <Activity className="w-5 h-5 text-indigo-600" /> Activity Level
+              </h2>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-slate-600 mb-3">
+                    How active are you?
+                  </label>
+                  <select
+                    className="w-full p-3 rounded-lg border border-slate-200 focus:ring-2 focus:ring-indigo-500 outline-none bg-white"
+                    value={formData.activityLevel}
+                    onChange={(e) => handleChange('activityLevel', e.target.value)}
+                  >
+                    <option value="Sedentary">Sedentary (office job, little exercise)</option>
+                    <option value="Lightly Active">Lightly Active (1-3 days/week)</option>
+                    <option value="Moderately Active">Moderately Active (3-5 days/week)</option>
+                    <option value="Very Active">Very Active (6-7 days/week)</option>
+                    <option value="Extremely Active">Extremely Active (athlete/physical job)</option>
+                  </select>
+                </div>
+
+                <div className="bg-indigo-50 rounded-lg p-3 text-xs text-indigo-800 leading-relaxed">
+                  💪 We factor this into your protein needs to support muscle maintenance during weight loss.
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Step 4: Disclaimer */}
+          {step === 4 && (
             <div className="space-y-6 animate-in fade-in slide-in-from-right duration-300">
               <h2 className="text-xl font-semibold text-slate-800 flex items-center gap-2">
                 <Shield className="w-5 h-5 text-indigo-600" /> Important Information
@@ -240,13 +276,13 @@ export default function OnboardingNew({ onComplete }) {
                   : 'bg-slate-200 text-slate-400 cursor-not-allowed'
               }`}
             >
-              {step === 3 ? 'Start Tracking' : 'Next'} <ArrowRight className="w-4 h-4" />
+              {step === 4 ? 'Start Tracking' : 'Next'} <ArrowRight className="w-4 h-4" />
             </button>
           </div>
 
           {/* Progress Dots */}
           <div className="mt-4 flex justify-center gap-2">
-            {[1, 2, 3].map(i => (
+            {[1, 2, 3, 4].map(i => (
               <div
                 key={i}
                 className={`h-1.5 rounded-full transition-all duration-300 ${

@@ -1376,8 +1376,9 @@ If you're experiencing several of these symptoms:
               proteinLog={proteinLog}
               currentStreak={currentStreak}
               longestStreak={longestStreak}
-              weeklyTrendData={getWeeklyTrendData()}
-              caloriePieData={getCaloriePieData()}
+              proteinFoods={proteinFoods}
+              activeCategory={activeCategory}
+              setActiveCategory={setActiveCategory}
               onAddProtein={quickAddProtein}
               onDeleteLog={(id) => {
                 // Handle delete - need to implement
