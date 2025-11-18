@@ -4,6 +4,7 @@ import './App.css';
 import CircularProgress from './components/CircularProgress';
 import Confetti from './components/Confetti';
 import QuickAddFAB from './components/QuickAddFAB';
+import Onboarding from './components/Onboarding';
 
 // GLP-1 Protein Tracker with ABW Calculations
 // Uses clinically-validated Adjusted Body Weight formulas
@@ -49,6 +50,11 @@ function App() {
   const [showConfetti, setShowConfetti] = useState(false);
   const [showQuickAdd, setShowQuickAdd] = useState(false);
   const [goalJustReached, setGoalJustReached] = useState(false);
+
+  // Onboarding state
+  const [onboardingComplete, setOnboardingComplete] = useState(() => {
+    return localStorage.getItem('onboardingComplete') === 'true';
+  });
 
   // Daily tracking state
   const [dailyProtein, setDailyProtein] = useState(0);
@@ -220,6 +226,14 @@ function App() {
     // Save to localStorage
     localStorage.setItem('abwData', JSON.stringify(calculatedData));
     localStorage.setItem('userProfile', JSON.stringify({...userProfile, profileComplete: true}));
+  };
+
+  /**
+   * Handle onboarding completion
+   */
+  const handleOnboardingComplete = () => {
+    localStorage.setItem('onboardingComplete', 'true');
+    setOnboardingComplete(true);
   };
 
   /**
@@ -677,6 +691,11 @@ If you're experiencing several of these symptoms:
 
   // Determine theme based on streak
   const currentTheme = currentStreak >= 30 ? 'gold' : currentStreak >= 7 ? 'purple' : 'teal';
+
+  // Show onboarding if not completed
+  if (!onboardingComplete) {
+    return <Onboarding onComplete={handleOnboardingComplete} />;
+  }
 
   return (
     <div className={`min-h-screen bg-neutral-50 theme-${currentTheme}`}>
