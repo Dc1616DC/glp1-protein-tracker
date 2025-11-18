@@ -5,7 +5,9 @@ import CircularProgress from './components/CircularProgress';
 import Confetti from './components/Confetti';
 import QuickAddFAB from './components/QuickAddFAB';
 import Onboarding from './components/Onboarding';
+import OnboardingNew from './components/OnboardingNew';
 import Auth from './components/Auth';
+import DashboardView from './components/DashboardView';
 import { db } from './lib/instantdb';
 import {
   saveProfile,
@@ -15,6 +17,28 @@ import {
   deleteProteinLog,
   migrateLocalStorageData
 } from './lib/dataOperations';
+import {
+  Trophy,
+  Flame,
+  Beef,
+  Trash2,
+  Activity,
+  Download,
+  Plus,
+  Lightbulb
+} from 'lucide-react';
+import {
+  PieChart,
+  Pie,
+  Cell,
+  ResponsiveContainer,
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  Tooltip,
+  ReferenceLine
+} from 'recharts';
 
 // GLP-1 Protein Tracker with ABW Calculations
 // Uses clinically-validated Adjusted Body Weight formulas
@@ -421,9 +445,96 @@ function App() {
   /**
    * Handle onboarding completion
    */
-  const handleOnboardingComplete = () => {
+  const handleOnboardingComplete = (formData) => {
     localStorage.setItem('onboardingComplete', 'true');
     setOnboardingComplete(true);
+
+    // If formData is provided (from new onboarding), set user profile and calculate targets
+    if (formData) {
+      const profile = {
+        age: formData.age,
+        gender: formData.gender,
+        weightLbs: formData.weightLbs,
+        heightFeet: formData.heightFeet,
+        heightInches: formData.heightInches,
+        medication: formData.medication,
+        disclaimerAccepted: formData.disclaimerAccepted,
+        profileComplete: true
+      };
+
+      // Calculate ABW and protein targets
+      const weightKg = parseFloat(formData.weightLbs) * 0.4536;
+      const totalHeightInches = parseInt(formData.heightFeet) * 12 + parseInt(formData.heightInches);
+      const heightM = totalHeightInches * 0.0254;
+
+      // Calculate BMI
+      const bmi = weightKg / (heightM * heightM);
+
+      // Calculate IBW (Hamwi formula)
+      const baseHeight = 60;
+      const inchesOver5Feet = totalHeightInches - baseHeight;
+      const ibwLbs = formData.gender === 'female'
+        ? 100 + (inchesOver5Feet * 5)
+        : 106 + (inchesOver5Feet * 6);
+      const ibwKg = ibwLbs * 0.4536;
+
+      // Determine adjustment factor based on BMI
+      let adjustmentFactor = 0.4;
+      if (bmi > 40) {
+        adjustmentFactor = 0.25;
+      } else if (bmi > 35) {
+        adjustmentFactor = 0.3;
+      } else if (bmi > 30) {
+        adjustmentFactor = 0.35;
+      }
+
+      // Calculate ABW
+      const abwKg = ibwKg + adjustmentFactor * (weightKg - ibwKg);
+
+      // Calculate protein targets
+      const proteinTargets = {
+        minimum: Math.round(abwKg * 1.2),
+        target: Math.round(abwKg * 1.4),
+        higher: Math.round(abwKg * 1.6)
+      };
+
+      // Calculate calorie guidance
+      const calorieGuidance = {
+        minimum: formData.gender === 'female' ? 1200 : 1500,
+        estimated: Math.round(abwKg * 25)
+      };
+
+      const calculatedData = {
+        bmi: Math.round(bmi * 10) / 10,
+        ibwKg: Math.round(ibwKg * 10) / 10,
+        abwKg: Math.round(abwKg * 10) / 10,
+        adjustmentFactor,
+        proteinTargets,
+        calorieGuidance
+      };
+
+      setAbwData(calculatedData);
+      setUserProfile(profile);
+
+      // Save to InstantDB if user is signed in
+      if (user) {
+        saveProfile(user.id, {
+          ...profile,
+          bmi: calculatedData.bmi,
+          ibwKg: calculatedData.ibwKg,
+          abwKg: calculatedData.abwKg,
+          proteinMinimum: calculatedData.proteinTargets.minimum,
+          proteinTarget: calculatedData.proteinTargets.target,
+          proteinHigher: calculatedData.proteinTargets.higher,
+          calorieMinimum: calculatedData.calorieGuidance.minimum,
+          calorieEstimated: calculatedData.calorieGuidance.estimated,
+        });
+      } else {
+        // Fallback to localStorage if not signed in
+        localStorage.setItem('abwData', JSON.stringify(calculatedData));
+        localStorage.setItem('userProfile', JSON.stringify(profile));
+      }
+    }
   };
 
   /**
@@ -670,6 +781,67 @@ function App() {
     return daysWithData > 0 ? Math.round((daysMetTarget / daysWithData) * 100) : 0;
   };
 
+  // Get last 7 days for weekly trend chart
+  const getWeeklyTrendData = () => {
+    if (user && instantData?.proteinLogs) {
+      // Use InstantDB data
+      const logsByDate = {};
+      instantData.proteinLogs.forEach(log => {
+        if (!logsByDate[log.date]) {
+          logsByDate[log.date] = 0;
+        }
+        logsByDate[log.date] += log.grams;
+      });
+
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayProtein = logsByDate[dateStr] || 0;
+
+        last7Days.push({
+          date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          protein: dayProtein,
+          goal: abwData.proteinTargets.minimum
+        });
+      }
+      return last7Days;
+    } else {
+      // Fallback to localStorage
+      const savedTracking = JSON.parse(localStorage.getItem('proteinTracking') || '{}');
+      const last7Days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toDateString();
+        const log = savedTracking[dateStr];
+
+        last7Days.push({
+          date: d.toLocaleDateString('en-US', { weekday: 'short' }),
+          protein: log?.total || 0,
+          goal: abwData.proteinTargets.minimum
+        });
+      }
+      return last7Days;
+    }
+  };
+
+  // Get calorie breakdown for pie chart
+  const getCaloriePieData = () => {
+    // 1g Protein = 4 kcal
+    const proteinCalories = dailyProtein * 4;
+    // Estimate remaining from calorie goal (rough approximation)
+    const remainingCalories = Math.max(0, (abwData.calorieGuidance?.minimum || 1200) - proteinCalories);
+
+    return [
+      { name: 'Protein (kcal)', value: proteinCalories },
+      { name: 'Remaining', value: remainingCalories }
+    ];
+  };
+
+  const PIE_COLORS = ['#6366f1', '#e2e8f0']; // Indigo, Slate
+
   // Organized protein food options by type
   const proteinFoods = {
     meat: [
@@ -897,7 +1069,7 @@ If you're experiencing several of these symptoms:
 
   // Show onboarding if not completed
   if (!onboardingComplete) {
-    return <Onboarding onComplete={handleOnboardingComplete} />;
+    return <OnboardingNew onComplete={handleOnboardingComplete} />;
   }
 
   // Show loading while checking authentication
@@ -1196,209 +1368,25 @@ If you're experiencing several of these symptoms:
 
           {/* TRACK VIEW */}
           {currentView === 'track' && userProfile.profileComplete && abwData.proteinTargets.minimum > 0 && (
-            <div className="main-content">
-              {/* Calorie Reminder */}
-              <div className="alert alert-info">
-                <div className="flex items-start gap-2">
-                  <div className="text-xl">💡</div>
-                  <div className="flex-1">
-                    <p className="font-semibold text-sm mb-1">
-                      Daily Reminder
-                    </p>
-                    <p className="text-xs" style={{ color: 'var(--text-secondary)' }}>
-                      Min {abwData.calorieGuidance.minimum} cal/day to preserve muscle
-                    </p>
-                  </div>
-                </div>
-              </div>
-
-              {/* Protein Targets */}
-              <div className="glass-card">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="section-title">Daily Targets</h2>
-                  <button
-                    onClick={handleEditProfile}
-                    className="btn-mobile btn-outline text-xs px-3 py-2"
-                    style={{ minHeight: '36px' }}
-                  >
-                    Edit
-                  </button>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3 mb-4">
-                  <div className="target-card target-card-primary">
-                    <div className="text-3xl mb-2">🎯</div>
-                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--error)' }}>MIN</div>
-                    <div className="text-3xl font-bold" style={{ color: 'var(--error)', lineHeight: '1' }}>{abwData.proteinTargets.minimum}</div>
-                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
-                  </div>
-
-                  <div className="target-card target-card-secondary">
-                    <div className="text-3xl mb-2">⭐</div>
-                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--warning)' }}>TARGET</div>
-                    <div className="text-3xl font-bold" style={{ color: 'var(--warning)', lineHeight: '1' }}>{abwData.proteinTargets.target}</div>
-                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
-                  </div>
-
-                  <div className="target-card target-card-tertiary">
-                    <div className="text-3xl mb-2">🏆</div>
-                    <div className="text-xs font-bold mb-1" style={{ color: 'var(--success)' }}>HIGH</div>
-                    <div className="text-3xl font-bold" style={{ color: 'var(--success)', lineHeight: '1' }}>{abwData.proteinTargets.higher}</div>
-                    <div className="text-xs mt-1" style={{ color: 'var(--text-secondary)' }}>g</div>
-                  </div>
-                </div>
-
-                <p className="text-xs text-center" style={{ color: 'var(--text-secondary)' }}>
-                  ABW: {abwData.abwKg} kg | BMI: {abwData.bmi}
-                </p>
-              </div>
-
-              {/* Daily Progress */}
-              <div className="glass-card">
-                <div className="flex justify-between items-center mb-4">
-                  <h2 className="section-title">Today's Progress</h2>
-                  <button
-                    onClick={handleResetDay}
-                    className="btn-mobile btn-outline text-xs px-3 py-2"
-                    style={{ minHeight: '36px', color: 'var(--error)' }}
-                  >
-                    Reset
-                  </button>
-                </div>
-
-                {/* Status Display - Circular Progress */}
-                <motion.div
-                  className="flex justify-center mb-6"
-                  key={dailyProtein}
-                  initial={{ scale: 1 }}
-                  animate={{ scale: [1, 1.02, 1] }}
-                  transition={{ duration: 0.3 }}
-                >
-                  <CircularProgress
-                    value={dailyProtein}
-                    goal={abwData.proteinTargets.minimum}
-                    streak={currentStreak}
-                    size={280}
-                  />
-                </motion.div>
-
-                {/* Status Badge */}
-                <div className="text-center mb-6">
-                  <div className={`badge ${
-                    statusColor === 'red' ? 'badge-error' :
-                    statusColor === 'yellow' ? 'badge-warning' :
-                    'badge-success'
-                  }`}>
-                    {currentStatus}
-                  </div>
-                </div>
-
-                {/* Category Tabs */}
-                <div className="category-tabs">
-                  {Object.keys(proteinFoods).map((category) => (
-                    <button
-                      key={category}
-                      onClick={() => setActiveCategory(category)}
-                      className={`category-tab ${
-                        activeCategory === category ? 'category-tab-active' : ''
-                      }`}
-                    >
-                      {formatCategoryName(category)}
-                    </button>
-                  ))}
-                </div>
-
-                {/* Quick Add Buttons */}
-                <div className="grid grid-cols-3 gap-2 mb-4">
-                  {proteinFoods[activeCategory].map((food) => (
-                    <button
-                      key={food.name}
-                      onClick={() => quickAddProtein(food.name, food.grams)}
-                      className="food-btn"
-                    >
-                      <div className="text-3xl mb-2">{food.icon}</div>
-                      <div className="text-xs font-bold mb-1 leading-tight" style={{ color: 'var(--text-primary)' }}>
-                        {food.name.length > 15 ? food.name.substring(0, 12) + '...' : food.name}
-                      </div>
-                      <div className="text-lg font-bold" style={{ color: 'var(--primary)' }}>+{food.grams}g</div>
-                    </button>
-                  ))}
-                </div>
-
-                {/* Custom Add */}
-                <div className="glass-card" style={{ borderStyle: 'dashed' }}>
-                  <h3 className="section-subtitle mb-3">Add Custom Entry</h3>
-                  <div className="space-y-2">
-                    <input
-                      type="text"
-                      value={customFood}
-                      onChange={(e) => setCustomFood(e.target.value)}
-                      placeholder="Food name (optional)"
-                      className="input-mobile"
-                    />
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        value={customAmount}
-                        onChange={(e) => setCustomAmount(e.target.value)}
-                        placeholder="Protein (g)"
-                        className="input-mobile flex-1"
-                      />
-                      <button
-                        onClick={handleAddCustom}
-                        disabled={!customAmount || parseInt(customAmount) <= 0}
-                        className={`btn-mobile ${
-                          customAmount && parseInt(customAmount) > 0
-                            ? 'btn-primary'
-                            : ''
-                        }`}
-                        style={!customAmount || parseInt(customAmount) <= 0 ? {
-                          background: 'var(--border)',
-                          color: 'var(--text-secondary)',
-                          cursor: 'not-allowed'
-                        } : {}}
-                      >
-                        Add
-                      </button>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Today's Log */}
-                {proteinLog.length > 0 && (
-                  <div className="glass-card">
-                    <h3 className="section-title mb-4">
-                      Today's Log <span className="text-sm font-normal" style={{ color: 'var(--text-secondary)' }}>({proteinLog.length})</span>
-                    </h3>
-                    <div className="space-y-2 max-h-80 overflow-y-auto">
-                      {proteinLog.map((entry, index) => (
-                        <div key={index} className="list-item">
-                          <div className="flex items-center gap-2">
-                            <span className="text-xs font-bold px-2 py-1 rounded-full text-white" style={{ background: 'var(--primary)' }}>
-                              {index + 1}
-                            </span>
-                            <span className="font-semibold text-sm">{entry.food}</span>
-                          </div>
-                          <div className="text-right">
-                            <div className="font-bold text-lg" style={{ color: 'var(--primary)' }}>{entry.grams}g</div>
-                            <div className="text-xs" style={{ color: 'var(--text-secondary)' }}>{entry.time}</div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-
-            </div>
-          )}
-
-          {/* Quick Add FAB - Only show in track view */}
-          {currentView === 'track' && userProfile.profileComplete && (
-            <QuickAddFAB onClick={() => {
-              // Scroll to food selection area
-              window.scrollTo({ top: 400, behavior: 'smooth' });
-            }} />
+            <DashboardView
+              user={user}
+              dailyProtein={dailyProtein}
+              proteinTargets={abwData.proteinTargets}
+              calorieGuidance={abwData.calorieGuidance}
+              proteinLog={proteinLog}
+              currentStreak={currentStreak}
+              longestStreak={longestStreak}
+              weeklyTrendData={getWeeklyTrendData()}
+              caloriePieData={getCaloriePieData()}
+              onAddProtein={quickAddProtein}
+              onDeleteLog={(id) => {
+                // Handle delete - need to implement
+                console.log('Delete log:', id);
+              }}
+              onExportData={exportToJSON}
+              onEditProfile={handleEditProfile}
+              onResetDay={handleResetDay}
+            />
           )}
 
           {/* HISTORY VIEW */}
